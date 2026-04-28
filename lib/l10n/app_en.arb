@@ -1,0 +1,105 @@
+{
+  "@@locale": "en",
+
+  "statGroupVitals": "Vitals",
+  "@statGroupVitals": { "description": "Header for the Survival Vitals stat group" },
+
+  "statHp": "HP",
+  "@statHp": { "description": "Hit Points stat label" },
+
+  "statHpDesc": "Reaches 0 = death, drops items, respawns at Checkpoint.",
+  "@statHpDesc": { "description": "HP stat description" },
+
+  "statStamina": "Stamina",
+  "@statStamina": { "description": "Stamina stat label" },
+
+  "statStaminaDesc": "Every action (Training, Exploring, Fighting) costs Stamina. Restored by Sleeping / Resting.",
+  "@statStaminaDesc": { "description": "Stamina stat description" },
+
+  "statHunger": "Hunger",
+  "@statHunger": { "description": "Hunger stat label" },
+
+  "statHungerDesc": "Decreases by 10 each day. Below 20 you begin losing HP. Restored by Eating.",
+  "@statHungerDesc": { "description": "Hunger stat description" },
+
+  "statGroupCombat": "Combat Stats",
+  "@statGroupCombat": { "description": "Header for the Combat stat group" },
+
+  "statStr": "Strength",
+  "@statStr": { "description": "Strength stat full label" },
+
+  "statStrShort": "STR",
+  "@statStrShort": { "description": "Strength stat short label" },
+
+  "statStrDesc": "Determines damage dealt. (Damage = STR + Weapon bonus).",
+  "@statStrDesc": { "description": "Strength stat description" },
+
+  "statVit": "Vitality",
+  "@statVit": { "description": "Vitality stat full label" },
+
+  "statVitShort": "VIT",
+  "@statVitShort": { "description": "Vitality stat short label" },
+
+  "statVitDesc": "Determines max HP and defense rate. (Defense = VIT + Armor bonus).",
+  "@statVitDesc": { "description": "Vitality stat description" },
+
+  "statAgi": "Agility",
+  "@statAgi": { "description": "Agility stat full label" },
+
+  "statAgiShort": "AGI",
+  "@statAgiShort": { "description": "Agility stat short label" },
+
+  "statAgiDesc": "Determines turn order in combat and flee success rate.",
+  "@statAgiDesc": { "description": "Agility stat description" },
+
+  "statGroupMeta": "Hidden Attributes",
+  "@statGroupMeta": { "description": "Header for the Meta / Hidden stat group" },
+
+  "statHumanity": "Humanity",
+  "@statHumanity": { "description": "Humanity stat label" },
+
+  "statHumanityDesc": "Starts at 50. Increases with good deeds, decreases with evil ones. Determines the final story branch.",
+  "@statHumanityDesc": { "description": "Humanity stat description" },
+
+  "statSanity": "Sanity",
+  "@statSanity": { "description": "Sanity stat label" },
+
+  "statSanityDesc": "Starts at 100. Decreases on horror events. Too low causes hallucinations (combat debuff).",
+  "@statSanityDesc": { "description": "Sanity stat description" },
+
+  "statEmbers": "Embers",
+  "@statEmbers": { "description": "Embers stat label" },
+
+  "statEmbersDesc": "The sole currency and experience of the game. Dropped by defeated enemies.",
+  "@statEmbersDesc": { "description": "Embers stat description" },
+
+  "statusDead": "Dead",
+  "@statusDead": { "description": "Character status: dead" },
+
+  "statusStarving": "Starving",
+  "@statusStarving": { "description": "Character status: starving" },
+
+  "statusHallucinating": "Hallucinating",
+  "@statusHallucinating": { "description": "Character status: hallucinating" },
+
+  "hintTapToContinue": "[ tap to continue ]",
+  "@hintTapToContinue": { "description": "UI hint on title card" },
+
+  "hintNextSegment": "▼",
+  "@hintNextSegment": { "description": "Arrow hint to advance dialog" },
+
+  "hintContinue": "[ continue ]",
+  "@hintContinue": { "description": "UI hint on last story segment" },
+
+  "storyDay1Title": "[ DAY 1: AWAKENING IN AN EMPTY TOMB ]",
+  "@storyDay1Title": { "description": "Story chapter title for day 1" },
+
+  "storyDay1Seg1": "The stench of burning marrow shoots straight into your nostrils, jolting you awake. Your eyelids are heavy as stone.",
+  "@storyDay1Seg1": { "description": "Day 1 story segment 1" },
+
+  "storyDay1Seg2": "Around you stand the crumbling walls of a long-forgotten cathedral. The only light comes from a small, dying fire at its center.",
+  "@storyDay1Seg2": { "description": "Day 1 story segment 2" },
+
+  "storyDay1Seg3": "Across the flames, a gaunt figure in a tattered cloak sits motionless. Its eye sockets are hollow and impossibly deep.",
+  "@storyDay1Seg3": { "description": "Day 1 story segment 3" }
+}

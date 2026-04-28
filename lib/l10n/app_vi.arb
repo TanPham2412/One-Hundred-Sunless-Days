@@ -1,0 +1,52 @@
+{
+  "@@locale": "vi",
+
+  "statGroupVitals": "Trạng Thái Sinh Tồn",
+
+  "statHp": "Máu",
+  "statHpDesc": "Về 0 là chết, rớt đồ, hồi sinh tại Điểm Kiểm Tra.",
+
+  "statStamina": "Thể Lực",
+  "statStaminaDesc": "Mọi hành động (Tập luyện, Khám phá, Đánh nhau) đều tốn Thể Lực. Hồi lại bằng cách Ngủ / Nghỉ ngơi.",
+
+  "statHunger": "Độ No",
+  "statHungerDesc": "Giảm 10 mỗi ngày. Dưới 20 bắt đầu tụt Máu. Hồi lại bằng cách Ăn.",
+
+  "statGroupCombat": "Chỉ Số Chiến Đấu",
+
+  "statStr": "Sức Mạnh",
+  "statStrShort": "STR",
+  "statStrDesc": "Quyết định lượng sát thương gây ra. (Sát thương = STR + Vũ khí).",
+
+  "statVit": "Thể Chất",
+  "statVitShort": "VIT",
+  "statVitDesc": "Quyết định Máu tối đa và tỉ lệ phòng ngự. (Phòng thủ = VIT + Giáp).",
+
+  "statAgi": "Tốc Độ",
+  "statAgiShort": "AGI",
+  "statAgiDesc": "Quyết định lượt đánh và tỉ lệ Bỏ chạy thành công.",
+
+  "statGroupMeta": "Thuộc Tính Ẩn",
+
+  "statHumanity": "Nhân Tính",
+  "statHumanityDesc": "Khởi đầu ở mức 50. Tăng khi làm việc thiện, giảm khi làm việc ác. Quyết định nhánh cốt truyện cuối.",
+
+  "statSanity": "Độ Tỉnh Táo",
+  "statSanityDesc": "Khởi đầu ở mức 100. Giảm khi gặp sự kiện kinh dị. Quá thấp sẽ gặp ảo giác (debuff trong chiến đấu).",
+
+  "statEmbers": "Tro Tàn",
+  "statEmbersDesc": "Tiền tệ và kinh nghiệm duy nhất của game. Rớt ra khi giết quái.",
+
+  "statusDead": "Đã Chết",
+  "statusStarving": "Đang Đói",
+  "statusHallucinating": "Ảo Giác",
+
+  "hintTapToContinue": "[ nhấn để tiếp tục ]",
+  "hintNextSegment": "▼",
+  "hintContinue": "[ tiếp tục ]",
+
+  "storyDay1Title": "[ NGÀY 1: TỈNH GIẤC NƠI MỘ TRỐNG ]",
+  "storyDay1Seg1": "Mùi khét của xương tủy cháy xộc thẳng vào mũi đánh thức bạn. Mí mắt nặng trĩu.",
+  "storyDay1Seg2": "Xung quanh là những bức tường đá đổ nát của một thánh đường đã bị lãng quên. Ánh sáng duy nhất đến từ một đống lửa nhỏ đang thoi thóp ở trung tâm.",
+  "storyDay1Seg3": "Bên kia đống lửa, một bóng người gầy gò, khoác áo choàng rách rưới đang ngồi bất động. Hốc mắt lão trống rỗng, sâu hoắm."
+}
