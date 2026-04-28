@@ -59,8 +59,10 @@ flutter:
 
   assets:
     - assets/images/backgrounds/
+    - assets/images/backgrounds/rest/
     - assets/images/monsters/
     - assets/images/weapons/
+    - assets/images/items/
 
   fonts:
     - family: ThaleahFat

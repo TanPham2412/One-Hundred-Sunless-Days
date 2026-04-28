@@ -37,10 +37,6 @@ class _SettingsPanelState extends State<SettingsPanel> {
   static const List<(String, String)> _langs = [
     ('en', 'EN'),
     ('vi', 'VI'),
-    ('zh', '简体'),
-    ('zh_TW', '繁體'),
-    ('ko', '한국'),
-    ('ja', '日本'),
   ];
 
   @override
