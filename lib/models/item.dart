@@ -1,10 +1,27 @@
+import 'package:one_hundred_sunless_days/models/status.dart';
+
+export 'package:one_hundred_sunless_days/models/status.dart';
+
+/// Độ hiếm của vật phẩm – ảnh hưởng màu viền trong UI.
+enum ItemRarity {
+  common,    // Thường      – không viền
+  uncommon,  // Ít thấy     – xanh lá  #44AA55
+  rare,      // Hiếm        – xanh dương #4488CC
+  epic,      // Sử thi      – tím       #9944CC
+  legendary, // Huyền thoại – vàng      #D4A843
+  mythic,    // Thần thoại  – đỏ        #CC3333
+}
+
 /// Nhóm vật phẩm theo chức năng.
 enum ItemGroup {
   food,    // Lương thực – quản lý Độ No
   medical, // Y tế – phục hồi HP
   mental,  // Tinh thần – Tỉnh Táo & Thể Lực
   combat,  // Tác chiến & đặc biệt
-  core,    // Lõi năng lượng – tiến trình
+  core,     // Lõi năng lượng – tiến trình
+  weapon,   // Vũ khí – trang bị chiến đấu
+  armor,    // Áo giáp – trang bị phòng thủ
+  material, // Vật liệu thô – dùng để chế tạo vũ khí và giáp
 }
 
 /// Chỉ số có thể bị ảnh hưởng bởi vật phẩm.
@@ -17,16 +34,6 @@ enum StatId {
   sanity,
   humanity,
   embers,
-}
-
-/// Trạng thái (debuff/buff) có thể được áp dụng hoặc xóa bỏ.
-enum StatusId {
-  bleeding,  // Chảy máu
-  infection, // Nhiễm trùng
-  poisoned,  // Nhiễm độc
-  fear,      // Sợ hãi
-  exhausted, // Kiệt sức
-  burning,   // Thiêu đốt
 }
 
 /// Cờ hành vi đặc biệt của vật phẩm.
@@ -59,27 +66,6 @@ class StatChange {
     required this.stat,
     required this.amount,
     this.permanent = false,
-    this.durationDays = 0,
-    this.chance = 1.0,
-  });
-}
-
-/// Áp dụng hoặc xóa bỏ một trạng thái khi sử dụng vật phẩm.
-class StatusChange {
-  final StatusId status;
-
-  /// [true] = áp dụng; [false] = xóa bỏ / kháng trong [durationDays] ngày.
-  final bool apply;
-
-  /// Số ngày kéo dài; 0 = cho đến khi được chữa lành.
-  final int durationDays;
-
-  /// Xác suất kích hoạt [0.0–1.0].
-  final double chance;
-
-  const StatusChange({
-    required this.status,
-    required this.apply,
     this.durationDays = 0,
     this.chance = 1.0,
   });
@@ -140,6 +126,9 @@ class Item {
   /// Path asset hình ảnh icon (null = dùng icon mặc định theo nhóm).
   final String? iconPath;
 
+  /// Độ hiếm của vật phẩm – xác định màu viền icon.
+  final ItemRarity rarity;
+
   /// Hồi đầy 100% HP thay vì lượng cố định (Nước Mắt Thánh Nữ).
   final bool healsToFull;
 
@@ -167,8 +156,51 @@ class Item {
   /// Hồi đầy 100% ánh sáng cho Lồng Đèn Xương (Trái Tim Oán Hận).
   final bool restoresLanternFull;
 
+  /// Tăng xác suất gặp sự kiện Tập Kích ban đêm [0.0–1.0] (Tro Kích Thích).
+  final double raidChanceBonus;
+
+  /// Khi dùng: ngăn chặn chức năng Nghỉ Ngơi đêm tiếp theo (Tủy Sống Dị Biến).
+  final bool blocksRestNextDay;
+
+  /// Mất N điểm EXP ở 1 chỉ số ngẫu nhiên (Tấn công hoặc Phòng thủ) khi sử dụng.
+  final int losesRandomExpAmount;
+
+  /// Lồng Đèn không tiêu hao nhiên liệu trong N ngày (Mảnh Thiên Thạch Rực Cháy).
+  final int lanternFreeBurnDays;
+
   /// Vật phẩm độc nhất – không bao giờ bị xóa khỏi balo khi số lượng về 0.
   final bool isUnique;
+
+  // ── Chỉ Số Vũ Khí ────────────────────────────────────────────────────────
+
+  /// Bonus Tấn Công khi dùng vũ khí này (0 = không phải vũ khí).
+  final int atkBonus;
+
+  /// Vũ khí Nặng: tăng Action Value ~5%, giảm tốc độ ra đòn.
+  final bool isHeavy;
+
+  /// Tỷ lệ đòn tấn công trượt dọc, chỉ gây 50% sát thương [0.0–1.0].
+  final double glancingHitChance;
+
+  /// Tỷ lệ gây [StatusId.bleeding] khi chém trúng kẻ địch mang xác thịt sinh học [0.0–1.0].
+  final double bleedOnBioHitChance;
+
+  /// Khi dùng để "Vung Vũ Khí Khan": cộng thêm vào xác suất sự kiện Tai Nạn Vũ Khí [0.0–1.0].
+  final double trainingWeaponAccidentBonus;
+
+  // ── Chỉ Số Áo Giáp ───────────────────────────────────────────────────────
+
+  /// Bonus Phòng Thủ khi trang bị áo giáp này.
+  final int defBonus;
+
+  /// Bonus Máu Tối Đa khi trang bị áo giáp này.
+  final int maxHpBonus;
+
+  /// [Tưa Rách]: Xác suất [0.0–1.0] đòn tấn công của quái vật bỏ qua toàn bộ bonus DEF từ áo giáp.
+  final double armorPierceChance;
+
+  /// [Ổ Vi Khuẩn]: Khi nhân vật đang bị [Nhiễm Trùng], tăng thêm HP mất/ngày từ hiệu ứng đó.
+  final int infectionHpDrainBonus;
 
   const Item({
     required this.id,
@@ -181,6 +213,7 @@ class Item {
     this.combatEffects = const [],
     this.flags = const [],
     this.iconPath,
+    this.rarity = ItemRarity.common,
     this.healsToFull = false,
     this.clearsAllDebuffs = false,
     this.drainsToZero = const [],
@@ -190,7 +223,20 @@ class Item {
     this.badEventBonus = 0.0,
     this.fullStaminaDays = 0,
     this.restoresLanternFull = false,
+    this.raidChanceBonus = 0.0,
+    this.blocksRestNextDay = false,
+    this.losesRandomExpAmount = 0,
+    this.lanternFreeBurnDays = 0,
     this.isUnique = false,
+    this.atkBonus = 0,
+    this.isHeavy = false,
+    this.glancingHitChance = 0.0,
+    this.bleedOnBioHitChance = 0.0,
+    this.trainingWeaponAccidentBonus = 0.0,
+    this.defBonus = 0,
+    this.maxHpBonus = 0,
+    this.armorPierceChance = 0.0,
+    this.infectionHpDrainBonus = 0,
   });
 
   bool hasFlag(ItemFlag f) => flags.contains(f);
@@ -202,278 +248,480 @@ class ItemRegistry {
   ItemRegistry._();
 
   // ── 1. Nhóm Lương Thực ────────────────────────────────────────────────────
-
-  /// Thịt Dai Mục Nát – +20 Độ No, -5 HP (nhiễm độc nhẹ).
-  static const Item rottenMeat = Item(
-    id: 'rotten_meat',
-    nameKey: 'item_rotten_meat_name',
-    descKey: 'item_rotten_meat_desc',
-    group: ItemGroup.food,
-    effects: [
-      StatChange(stat: StatId.hunger, amount: 20),
-    ],
-    sideEffects: [
-      StatChange(stat: StatId.hp, amount: -5),
-    ],
-  );
-
-  /// Bánh Mì Mốc Tím – +15 Độ No, -10 Độ Tỉnh Táo.
-  static const Item moldBread = Item(
-    id: 'mold_bread',
-    nameKey: 'item_mold_bread_name',
-    descKey: 'item_mold_bread_desc',
-    group: ItemGroup.food,
-    iconPath: 'assets/images/items/item_slice_mold_bread.png',
-    effects: [
-      StatChange(stat: StatId.hunger, amount: 15),
-    ],
-    sideEffects: [
-      StatChange(stat: StatId.sanity, amount: -10),
-    ],
-  );
-
-  /// Lương Khô Tử Trận – +30 Độ No, +20 Thể Lực. Không tác dụng phụ.
-  static const Item soldierRation = Item(
-    id: 'soldier_ration',
-    nameKey: 'item_soldier_ration_name',
-    descKey: 'item_soldier_ration_desc',
-    group: ItemGroup.food,
-    effects: [
-      StatChange(stat: StatId.hunger, amount: 30),
-      StatChange(stat: StatId.stamina, amount: 20),
-    ],
-  );
-
-  /// Súp Rễ Cây U Sầu – +30 Độ No, -10 Độ Tỉnh Táo.
-  static const Item sorrowSoup = Item(
-    id: 'sorrow_soup',
-    nameKey: 'item_sorrow_soup_name',
-    descKey: 'item_sorrow_soup_desc',
-    group: ItemGroup.food,
-    effects: [
-      StatChange(stat: StatId.hunger, amount: 30),
-    ],
-    sideEffects: [
-      StatChange(stat: StatId.sanity, amount: -10),
-    ],
-  );
-
-  /// Thịt Nướng Tế Thần – +50 Độ No, +10 HP, -15 Nhân Tính.
-  static const Item sacrificialMeat = Item(
-    id: 'sacrificial_meat',
-    nameKey: 'item_sacrificial_meat_name',
-    descKey: 'item_sacrificial_meat_desc',
-    group: ItemGroup.food,
-    effects: [
-      StatChange(stat: StatId.hunger, amount: 50),
-      StatChange(stat: StatId.hp, amount: 10),
-    ],
-    sideEffects: [
-      StatChange(stat: StatId.humanity, amount: -15),
-    ],
-  );
+  // (Trống – món ăn sẽ được thêm lại)
 
   // ── 2. Nhóm Y Tế ──────────────────────────────────────────────────────────
-
-  /// Băng Gạc Bẩn – +15 HP, xóa [Chảy máu], 20% gây [Nhiễm trùng] (-5 maxHP 3 ngày).
-  static const Item dirtyBandage = Item(
-    id: 'dirty_bandage',
-    nameKey: 'item_dirty_bandage_name',
-    descKey: 'item_dirty_bandage_desc',
-    group: ItemGroup.medical,
-    effects: [
-      StatChange(stat: StatId.hp, amount: 15),
-    ],
-    statusEffects: [
-      StatusChange(status: StatusId.bleeding, apply: false),
-      StatusChange(
-          status: StatusId.infection, apply: true, durationDays: 3, chance: 0.2),
-    ],
-    sideEffects: [
-      StatChange(stat: StatId.maxHp, amount: -5, durationDays: 3, chance: 0.2),
-    ],
-  );
-
-  /// Chiết Xuất Huyết Tinh – +40 HP tức thì, -15 Nhân Tính.
-  static const Item emberBlood = Item(
-    id: 'ember_blood',
-    nameKey: 'item_ember_blood_name',
-    descKey: 'item_ember_blood_desc',
-    group: ItemGroup.medical,
-    effects: [
-      StatChange(stat: StatId.hp, amount: 40),
-    ],
-    sideEffects: [
-      StatChange(stat: StatId.humanity, amount: -15),
-    ],
-  );
-
-  /// Nhựa Cây Sầu Muộn – +10 HP/ngày trong 3 ngày. Không tác dụng phụ.
-  static const Item weepingResin = Item(
-    id: 'weeping_resin',
-    nameKey: 'item_weeping_resin_name',
-    descKey: 'item_weeping_resin_desc',
-    group: ItemGroup.medical,
-    effects: [
-      StatChange(stat: StatId.hp, amount: 10, durationDays: 3),
-    ],
-  );
-
-  /// Nước Mắt Thánh Nữ – Hồi 100% HP, xóa mọi debuff, Thể Lực về 0.
-  static const Item fallenTears = Item(
-    id: 'fallen_tears',
-    nameKey: 'item_fallen_tears_name',
-    descKey: 'item_fallen_tears_desc',
-    group: ItemGroup.medical,
-    healsToFull: true,
-    clearsAllDebuffs: true,
-    drainsToZero: [StatId.stamina],
-  );
-
-  /// Ký Sinh Trùng Khâu Nhục – +50 HP (dùng được trong combat, không tốn lượt),
-  /// -2 maxHP vĩnh viễn.
-  static const Item fleshParasite = Item(
-    id: 'flesh_parasite',
-    nameKey: 'item_flesh_parasite_name',
-    descKey: 'item_flesh_parasite_desc',
-    group: ItemGroup.medical,
-    effects: [
-      StatChange(stat: StatId.hp, amount: 50),
-    ],
-    sideEffects: [
-      StatChange(stat: StatId.maxHp, amount: -2, permanent: true),
-    ],
-    flags: [ItemFlag.usableInCombat, ItemFlag.noTurnCost],
-  );
+  // (Trống – vật phẩm y tế sẽ được thêm lại)
 
   // ── 3. Nhóm Tinh Thần & Cảm Giác ─────────────────────────────────────────
-
-  /// Cỏ Khô An Thần – +20 Độ Tỉnh Táo. Không tác dụng phụ.
-  static const Item soothingHerb = Item(
-    id: 'soothing_herb',
-    nameKey: 'item_soothing_herb_name',
-    descKey: 'item_soothing_herb_desc',
-    group: ItemGroup.mental,
-    effects: [
-      StatChange(stat: StatId.sanity, amount: 20),
-    ],
-  );
-
-  /// Nước Suối Ô Nhiễm – +15 Thể Lực, -5 HP.
-  static const Item pollutedWater = Item(
-    id: 'polluted_water',
-    nameKey: 'item_polluted_water_name',
-    descKey: 'item_polluted_water_desc',
-    group: ItemGroup.mental,
-    effects: [
-      StatChange(stat: StatId.stamina, amount: 15),
-    ],
-    sideEffects: [
-      StatChange(stat: StatId.hp, amount: -5),
-    ],
-  );
-
-  /// Rượu Đầu Lâu – 100% Stamina trong 1 ngày, miễn nhiễm [Sợ Hãi];
-  /// sang ngày sau bị [Kiệt sức] (maxStamina -50% trong 1 ngày).
-  static const Item skullMoonshine = Item(
-    id: 'skull_moonshine',
-    nameKey: 'item_skull_moonshine_name',
-    descKey: 'item_skull_moonshine_desc',
-    group: ItemGroup.mental,
-    fullStaminaDays: 1,
-    statusEffects: [
-      StatusChange(status: StatusId.fear, apply: false, durationDays: 1),
-      StatusChange(status: StatusId.exhausted, apply: true, durationDays: 1),
-    ],
-  );
-
-  /// Tro Xông Hương – +40 Độ Tỉnh Táo; nếu dùng trước khi Ngủ: không bị
-  /// tập kích ban đêm; tỉ lệ sự kiện xấu sáng hôm sau +10%.
-  static const Item lostIncense = Item(
-    id: 'lost_incense',
-    nameKey: 'item_lost_incense_name',
-    descKey: 'item_lost_incense_desc',
-    group: ItemGroup.mental,
-    effects: [
-      StatChange(stat: StatId.sanity, amount: 40),
-    ],
-    preventNightRaid: true,
-    badEventBonus: 0.1,
-  );
+  // (Trống – vật phẩm tinh thần sẽ được thêm lại)
 
   // ── 4. Nhóm Tác Chiến & Đặc Biệt ─────────────────────────────────────────
-
-  /// Lọ Tro Mù – Combat only: địch -50% hit chance trong 2 lượt.
-  static const Item ashVial = Item(
-    id: 'ash_vial',
-    nameKey: 'item_ash_vial_name',
-    descKey: 'item_ash_vial_desc',
-    group: ItemGroup.combat,
-    combatEffects: [
-      CombatEffect(type: 'enemy_miss_chance', value: -50, durationTurns: 2),
-    ],
-    flags: [ItemFlag.combatOnly],
-  );
-
-  /// Dầu Hắc Ín Rỉ Máu – Combat only: đòn tiếp theo gây [Thiêu Đốt]
-  /// (5 HP/lượt × 3 lượt), trừ 1 độ bền vũ khí.
-  static const Item bleedingPitch = Item(
-    id: 'bleeding_pitch',
-    nameKey: 'item_bleeding_pitch_name',
-    descKey: 'item_bleeding_pitch_desc',
-    group: ItemGroup.combat,
-    combatEffects: [
-      CombatEffect(type: 'burn_on_next_hit', value: 5, durationTurns: 3),
-      CombatEffect(type: 'damage_weapon', value: -1),
-    ],
-    flags: [ItemFlag.combatOnly],
-  );
-
-  /// Máu Loãng Kẻ Điên – Bỏ qua quái vật cấp thấp trong đêm Trăng Máu,
-  /// -20 Độ Tỉnh Táo ngay khi dùng.
-  static const Item madmanBlood = Item(
-    id: 'madman_blood',
-    nameKey: 'item_madman_blood_name',
-    descKey: 'item_madman_blood_desc',
-    group: ItemGroup.combat,
-    skipLowMonsters: true,
-    sideEffects: [
-      StatChange(stat: StatId.sanity, amount: -20),
-    ],
-  );
-
-  /// Bùa Hộ Mệnh Vỡ Nát – Passive: chặn 1 đòn chí mạng, giữ lại 1 HP,
-  /// vỡ vụn sau khi kích hoạt.
-  static const Item shatteredAmulet = Item(
-    id: 'shattered_amulet',
-    nameKey: 'item_shattered_amulet_name',
-    descKey: 'item_shattered_amulet_desc',
-    group: ItemGroup.combat,
-    blocksLethalHit: true,
-    flags: [ItemFlag.passive],
-  );
+  // (Trống – vật phẩm tác chiến sẽ được thêm lại)
 
   // ── 5. Nhóm Lõi Năng Lượng ────────────────────────────────────────────────
+  // (Trống – lõi năng lượng sẽ được thêm lại)
 
-  /// Lõi Lửa Cơ Bản – Nguyên liệu bắt buộc để Đột phá giới hạn Cấp độ.
-  static const Item emberCore = Item(
-    id: 'ember_core',
-    nameKey: 'item_ember_core_name',
-    descKey: 'item_ember_core_desc',
-    group: ItemGroup.core,
+  // ── 6. Nhóm Vũ Khí ────────────────────────────────────────────────────────
+  // (Trống – vũ khí sẽ được thêm lại)
+
+  // ── 7. Nhóm Áo Giáp ───────────────────────────────────────────────────────
+  // (Trống – áo giáp sẽ được thêm lại)
+
+  // ── 8. Nhóm Vật Liệu Chế Tạo ─────────────────────────────────────────────
+
+  // ── Tier 1: Common ──────────────────────────────────────────────────────
+
+  static const Item roughIronScrap = Item(
+    id: 'rough_iron_scrap',
+    nameKey: 'item_rough_iron_scrap_name',
+    descKey: 'item_rough_iron_scrap_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/rough_iron_scrap.png',
+    rarity: ItemRarity.common,
     flags: [ItemFlag.material],
   );
 
-  /// Trái Tim Oán Hận – Hồi 100% ánh sáng Lồng Đèn, -10 Nhân Tính.
-  static const Item wrathfulHeart = Item(
-    id: 'wrathful_heart',
-    nameKey: 'item_wrathful_heart_name',
-    descKey: 'item_wrathful_heart_desc',
-    group: ItemGroup.core,
-    restoresLanternFull: true,
-    sideEffects: [
-      StatChange(stat: StatId.humanity, amount: -10),
-    ],
+  static const Item rustyNail = Item(
+    id: 'rusty_nail',
+    nameKey: 'item_rusty_nail_name',
+    descKey: 'item_rusty_nail_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/rusty_nail.png',
+    rarity: ItemRarity.common,
+    flags: [ItemFlag.material],
+  );
+
+  // ── Tier 2: Uncommon ────────────────────────────────────────────────────
+
+  static const Item oldGrindstone = Item(
+    id: 'old_grindstone',
+    nameKey: 'item_old_grindstone_name',
+    descKey: 'item_old_grindstone_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/old_grindstone.png',
+    rarity: ItemRarity.uncommon,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item brokenArmorPiece = Item(
+    id: 'broken_armor_piece',
+    nameKey: 'item_broken_armor_piece_name',
+    descKey: 'item_broken_armor_piece_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/broken_armor_piece.png',
+    rarity: ItemRarity.uncommon,
+    flags: [ItemFlag.material],
+  );
+
+  // ── Tier 3: Rare ────────────────────────────────────────────────────────
+
+  static const Item ironChains = Item(
+    id: 'iron_chains',
+    nameKey: 'item_iron_chains_name',
+    descKey: 'item_iron_chains_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/iron_chains.png',
+    rarity: ItemRarity.rare,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item steelOre = Item(
+    id: 'steel_ore',
+    nameKey: 'item_steel_ore_name',
+    descKey: 'item_steel_ore_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/steel_ore.png',
+    rarity: ItemRarity.rare,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item blastPowderJar = Item(
+    id: 'blast_powder_jar',
+    nameKey: 'item_blast_powder_jar_name',
+    descKey: 'item_blast_powder_jar_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/blast_powder_jar.png',
+    rarity: ItemRarity.rare,
+    flags: [ItemFlag.material],
+  );
+
+  // ── Tier 4: Epic ────────────────────────────────────────────────────────
+
+  static const Item pureSilverOre = Item(
+    id: 'pure_silver_ore',
+    nameKey: 'item_pure_silver_ore_name',
+    descKey: 'item_pure_silver_ore_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/pure_silver_ore.png',
+    rarity: ItemRarity.epic,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item mechanicalComponents = Item(
+    id: 'mechanical_components',
+    nameKey: 'item_mechanical_components_name',
+    descKey: 'item_mechanical_components_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/mechanical_components.png',
+    rarity: ItemRarity.epic,
+    flags: [ItemFlag.material],
+  );
+
+  // ── Tier 5: Legendary ───────────────────────────────────────────────────
+
+  static const Item rareSteelOre = Item(
+    id: 'rare_steel_ore',
+    nameKey: 'item_rare_steel_ore_name',
+    descKey: 'item_rare_steel_ore_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/rare_steel_ore.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item pureGoldBlock = Item(
+    id: 'pure_gold_block',
+    nameKey: 'item_pure_gold_block_name',
+    descKey: 'item_pure_gold_block_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/pure_gold_block.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  // ── Nguyên liệu hữu cơ & sinh học ────────────────────────────────────────
+
+  // ── Tier 1: Common ───────────────────────────────────────────────────────
+
+  static const Item rawAnimalHide = Item(
+    id: 'raw_animal_hide',
+    nameKey: 'item_raw_animal_hide_name',
+    descKey: 'item_raw_animal_hide_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/raw_animal_hide.png',
+    rarity: ItemRarity.common,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item thornyRopeCoil = Item(
+    id: 'thorny_rope_coil',
+    nameKey: 'item_thorny_rope_coil_name',
+    descKey: 'item_thorny_rope_coil_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/thorny_rope_coil.png',
+    rarity: ItemRarity.common,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item animalFat = Item(
+    id: 'animal_fat',
+    nameKey: 'item_animal_fat_name',
+    descKey: 'item_animal_fat_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/animal_fat.png',
+    rarity: ItemRarity.common,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item mudAndLeaves = Item(
+    id: 'mud_and_leaves',
+    nameKey: 'item_mud_and_leaves_name',
+    descKey: 'item_mud_and_leaves_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/mud_and_leaves.png',
+    rarity: ItemRarity.common,
+    flags: [ItemFlag.material],
+  );
+
+  // ── Tier 2: Uncommon ─────────────────────────────────────────────────────
+
+  static const Item thickWarmFur = Item(
+    id: 'thick_warm_fur',
+    nameKey: 'item_thick_warm_fur_name',
+    descKey: 'item_thick_warm_fur_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/thick_warm_fur.png',
+    rarity: ItemRarity.uncommon,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item resin = Item(
+    id: 'resin',
+    nameKey: 'item_resin_name',
+    descKey: 'item_resin_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/resin.png',
+    rarity: ItemRarity.uncommon,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item leatherStrap = Item(
+    id: 'leather_strap',
+    nameKey: 'item_leather_strap_name',
+    descKey: 'item_leather_strap_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/leather_strap.png',
+    rarity: ItemRarity.uncommon,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item hardOakWood = Item(
+    id: 'hard_oak_wood',
+    nameKey: 'item_hard_oak_wood_name',
+    descKey: 'item_hard_oak_wood_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/hard_oak_wood.png',
+    rarity: ItemRarity.uncommon,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item beastBloodVial = Item(
+    id: 'beast_blood_vial',
+    nameKey: 'item_beast_blood_vial_name',
+    descKey: 'item_beast_blood_vial_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/beast_blood_vial.png',
+    rarity: ItemRarity.uncommon,
+    flags: [ItemFlag.material],
+  );
+
+  // ── Tier 3: Rare ─────────────────────────────────────────────────────────
+
+  static const Item stickyTar = Item(
+    id: 'sticky_tar',
+    nameKey: 'item_sticky_tar_name',
+    descKey: 'item_sticky_tar_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/sticky_tar.png',
+    rarity: ItemRarity.rare,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item mutatedBeastTendon = Item(
+    id: 'mutated_beast_tendon',
+    nameKey: 'item_mutated_beast_tendon_name',
+    descKey: 'item_mutated_beast_tendon_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/mutated_beast_tendon.png',
+    rarity: ItemRarity.rare,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item beastHorn = Item(
+    id: 'beast_horn',
+    nameKey: 'item_beast_horn_name',
+    descKey: 'item_beast_horn_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/beast_horn.png',
+    rarity: ItemRarity.rare,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item beastBoneRemnant = Item(
+    id: 'beast_bone_remnant',
+    nameKey: 'item_beast_bone_remnant_name',
+    descKey: 'item_beast_bone_remnant_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/beast_bone_remnant.png',
+    rarity: ItemRarity.rare,
+    flags: [ItemFlag.material],
+  );
+
+  // ── Tier 4: Epic ─────────────────────────────────────────────────────────
+
+  static const Item eliteMonsterHide = Item(
+    id: 'elite_monster_hide',
+    nameKey: 'item_elite_monster_hide_name',
+    descKey: 'item_elite_monster_hide_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/elite_monster_hide.png',
+    rarity: ItemRarity.epic,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item bloodCrystal = Item(
+    id: 'blood_crystal',
+    nameKey: 'item_blood_crystal_name',
+    descKey: 'item_blood_crystal_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/blood_crystal.png',
+    rarity: ItemRarity.epic,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item wraithHair = Item(
+    id: 'wraith_hair',
+    nameKey: 'item_wraith_hair_name',
+    descKey: 'item_wraith_hair_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/wraith_hair.png',
+    rarity: ItemRarity.epic,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item brokenHolyRelic = Item(
+    id: 'broken_holy_relic',
+    nameKey: 'item_broken_holy_relic_name',
+    descKey: 'item_broken_holy_relic_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/broken_holy_relic.png',
+    rarity: ItemRarity.epic,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item brokenSilverChalice = Item(
+    id: 'broken_silver_chalice',
+    nameKey: 'item_broken_silver_chalice_name',
+    descKey: 'item_broken_silver_chalice_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/broken_silver_chalice.png',
+    rarity: ItemRarity.epic,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item dreamIncensePowder = Item(
+    id: 'dream_incense_powder',
+    nameKey: 'item_dream_incense_powder_name',
+    descKey: 'item_dream_incense_powder_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/dream_incense_powder.png',
+    rarity: ItemRarity.epic,
+    flags: [ItemFlag.material],
+  );
+
+  // ── Tier 5: Legendary ──────────────────────────────────────────────────
+
+  static const Item nightmareFruit = Item(
+    id: 'nightmare_fruit',
+    nameKey: 'item_nightmare_fruit_name',
+    descKey: 'item_nightmare_fruit_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/nightmare_fruit.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item cleansingTear = Item(
+    id: 'cleansing_tear',
+    nameKey: 'item_cleansing_tear_name',
+    descKey: 'item_cleansing_tear_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/cleansing_tear.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item quartzClockworkParts = Item(
+    id: 'quartz_clockwork_parts',
+    nameKey: 'item_quartz_clockwork_parts_name',
+    descKey: 'item_quartz_clockwork_parts_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/quartz_clockwork_parts.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item boneLanternFire = Item(
+    id: 'bone_lantern_fire',
+    nameKey: 'item_bone_lantern_fire_name',
+    descKey: 'item_bone_lantern_fire_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/bone_lantern_fire.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item brokenRoyalSword = Item(
+    id: 'broken_royal_sword',
+    nameKey: 'item_broken_royal_sword_name',
+    descKey: 'item_broken_royal_sword_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/broken_royal_sword.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item rustedKingArmor = Item(
+    id: 'rusted_king_armor',
+    nameKey: 'item_rusted_king_armor_name',
+    descKey: 'item_rusted_king_armor_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/rusted_king_armor.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item petrifiedRoot = Item(
+    id: 'petrified_root',
+    nameKey: 'item_petrified_root_name',
+    descKey: 'item_petrified_root_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/petrified_root.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item weepingBowFrame = Item(
+    id: 'weeping_bow_frame',
+    nameKey: 'item_weeping_bow_frame_name',
+    descKey: 'item_weeping_bow_frame_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/weeping_bow_frame.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item goliathRuinedArmor = Item(
+    id: 'goliath_ruined_armor',
+    nameKey: 'item_goliath_ruined_armor_name',
+    descKey: 'item_goliath_ruined_armor_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/goliath_ruined_armor.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item goldDustedShieldFragment = Item(
+    id: 'gold_dusted_shield_fragment',
+    nameKey: 'item_gold_dusted_shield_fragment_name',
+    descKey: 'item_gold_dusted_shield_fragment_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/gold_dusted_shield_fragment.png',
+    rarity: ItemRarity.legendary,
+    flags: [ItemFlag.material],
+  );
+
+  // ── Tier 6: Mythic ─────────────────────────────────────────────────────
+
+  static const Item evilGodChain = Item(
+    id: 'evil_god_chain',
+    nameKey: 'item_evil_god_chain_name',
+    descKey: 'item_evil_god_chain_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/evil_god_chain.png',
+    rarity: ItemRarity.mythic,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item abyssalShroudFragment = Item(
+    id: 'abyssal_shroud_fragment',
+    nameKey: 'item_abyssal_shroud_fragment_name',
+    descKey: 'item_abyssal_shroud_fragment_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/abyssal_shroud_fragment.png',
+    rarity: ItemRarity.mythic,
+    flags: [ItemFlag.material],
+  );
+
+  static const Item playersOwnBlood = Item(
+    id: 'players_own_blood',
+    nameKey: 'item_players_own_blood_name',
+    descKey: 'item_players_own_blood_desc',
+    group: ItemGroup.material,
+    iconPath: 'assets/images/items/material/players_own_blood.png',
+    rarity: ItemRarity.mythic,
+    flags: [ItemFlag.material],
   );
 
   /// Lồng Đèn Xương – Vật phẩm độc nhất, không bao giờ biến mất.
@@ -484,6 +732,7 @@ class ItemRegistry {
     descKey: 'item_bone_lantern_desc',
     group: ItemGroup.core,
     iconPath: 'assets/images/items/icon_bone_lantern.png',
+    rarity: ItemRarity.mythic,
     flags: [ItemFlag.passive],
     isUnique: true,
   );
@@ -491,27 +740,52 @@ class ItemRegistry {
   // ── Danh sách tổng hợp ────────────────────────────────────────────────────
 
   static const List<Item> all = [
-    rottenMeat,
-    moldBread,
-    soldierRation,
-    sorrowSoup,
-    sacrificialMeat,
-    dirtyBandage,
-    emberBlood,
-    weepingResin,
-    fallenTears,
-    fleshParasite,
-    soothingHerb,
-    pollutedWater,
-    skullMoonshine,
-    lostIncense,
-    ashVial,
-    bleedingPitch,
-    madmanBlood,
-    shatteredAmulet,
-    emberCore,
-    wrathfulHeart,
     boneLantern,
+    // ── Vật liệu chế tạo ──
+    roughIronScrap,
+    rustyNail,
+    oldGrindstone,
+    brokenArmorPiece,
+    ironChains,
+    steelOre,
+    blastPowderJar,
+    pureSilverOre,
+    mechanicalComponents,
+    rareSteelOre,
+    pureGoldBlock,
+    // ── Nguyên liệu hữu cơ & sinh học ──
+    rawAnimalHide,
+    thornyRopeCoil,
+    animalFat,
+    mudAndLeaves,
+    thickWarmFur,
+    resin,
+    leatherStrap,
+    hardOakWood,
+    beastBloodVial,
+    stickyTar,
+    mutatedBeastTendon,
+    beastHorn,
+    beastBoneRemnant,
+    eliteMonsterHide,
+    bloodCrystal,
+    wraithHair,
+    brokenHolyRelic,
+    brokenSilverChalice,
+    dreamIncensePowder,
+    nightmareFruit,
+    cleansingTear,
+    quartzClockworkParts,
+    boneLanternFire,
+    brokenRoyalSword,
+    rustedKingArmor,
+    petrifiedRoot,
+    weepingBowFrame,
+    goliathRuinedArmor,
+    goldDustedShieldFragment,
+    evilGodChain,
+    abyssalShroudFragment,
+    playersOwnBlood,
   ];
 
   /// Tra cứu vật phẩm theo [id]. Trả về null nếu không tìm thấy.

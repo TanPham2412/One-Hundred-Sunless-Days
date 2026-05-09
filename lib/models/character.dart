@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'combat_formulas.dart';
 import 'inventory.dart';
 import 'item.dart';
 import 'lantern.dart';
@@ -9,17 +10,66 @@ import 'lantern.dart';
 // ────────────────────────────────────────────────────────────────────────────
 
 enum NightEvent {
-  deepSleep,       // Giấc ngủ sâu
-  nightmare,       // Ác mộng từ Vực Thẳm
-  blindWhisper,    // Lời thì thầm của Kẻ Mù
-  emberThief,      // Kẻ trộm tro tàn
-  nightRaid,       // Đột kích bất ngờ
-  sadMemory,       // Hồi ức u buồn
-  outsidePlea,     // Lời cầu cứu ngoài cửa
-  toxicFog,        // Cơn bão sương độc
-  vaultSong,       // Khúc hát từ rường cột
-  ashFlare,        // Sự soi rọi của Tro tàn (Hiếm)
-  invisibleWatcher,// Kẻ dòm ngó vô hình
+  deepSleep,        // Giấc ngủ sâu
+  nightmare,        // Ác mộng từ Vực Thẳm
+  blindWhisper,     // Lời thì thầm của Kẻ Mù
+  emberThief,       // Kẻ trộm tro tàn
+  nightRaid,        // Đột kích bất ngờ
+  sadMemory,        // Hồi ức u buồn
+  outsidePlea,      // Lời cầu cứu ngoài cửa
+  toxicFog,         // Cơn bão sương độc
+  vaultSong,        // Khúc hát từ rường cột
+  ashFlare,         // Sự soi rọi của Tro tàn (Hiếm)
+  suddenDeathDoor,  // Ranh giới Đột Tử – thức dậy với đúng 1 HP
+}
+
+/// Loại bài tập tập luyện tại hub.
+enum TrainingType {
+  strength,   // Vung vũ khí khan – Sức Mạnh
+  endurance,  // Khuân vác xà gồ – Bền Bỉ (VIT)
+  meditation, // Ngồi thiền trước lửa – Ý Chí (WILL)
+}
+
+/// Sự kiện ngẫu nhiên khi thực hiện bài tập Vung Vũ Khí Khan.
+/// Xác suất: 35 / 12 / 12 / 10 / 8 / 8 / 5 / 5 / 5 %.
+enum StrengthTrainingEvent {
+  normal,          // 35% – Bình thường
+  physicalInjury,  // 12% – Chấn thương thể xác
+  psychTrauma,     // 12% – Tổn thương tâm lý
+  weaponAccident,  // 10% – Tai nạn vũ khí
+  breakthrough,    //  8% – Giác ngộ (Đột phá)
+  accidentalFind,  //  8% – Vô tình khám phá
+  abyssCall,       //  5% – Tiếng gọi Vực thẳm
+  exhaustion,      //  5% – Vắt kiệt sinh mệnh
+  dangerAttracted, //  5% – Thu hút hiểm nguy
+}
+
+/// Sự kiện ngẫu nhiên khi thực hiện bài tập Khuân Vác Xà Gồ.
+/// Xác suất: 25 / 12 / 10 / 10 / 15 / 12 / 7 / 5 / 4 %.
+enum EnduranceTrainingEvent {
+  normal,              // 25% – Bình thường
+  spinalInjury,        // 12% – Chấn thương cột sống
+  hiddenHazard,        // 10% – Hiểm họa ẩn giấu
+  psychologicalWeight, // 10% – Sức nặng tâm lý
+  ironWill,            // 15% – Ý chí sắt đá
+  forgottenCave,       // 12% – Hốc đất lãng quên
+  bloodInRock,         //  7% – Hòa huyết vào đá
+  crushed,             //  5% – Bị nghiền nát
+  collapseSound,       //  4% – Âm thanh sụp đổ
+}
+
+/// Sự kiện ngẫu nhiên khi thực hiện bài tập Ngồi Thiền Trước Lửa.
+/// Xác suất: 35 / 12 / 12 / 10 / 8 / 8 / 5 / 5 / 5 %.
+enum MeditationTrainingEvent {
+  normal,             // 35% – Tâm trí tĩnh lặng
+  psychHallucination, // 12% – Ảo ảnh trong tro tàn
+  burnInjury,         // 12% – Hơi nóng phỏng da
+  lanternFlicker,     // 10% – Bóng tối chực chờ
+  enlightenment,      //  8% – Tâm như minh cảnh
+  ancientScript,      //  8% – Cổ ngữ trong ngọn lửa
+  abyssCall,          //  5% – Lời thì thầm của Cổ Thần
+  soulWander,         //  5% – Lạc bước cõi âm
+  shadowBetrayal,     //  5% – Cái bóng phản bội
 }
 
 /// Kết quả sau một lần Nghỉ Ngơi.
@@ -69,8 +119,17 @@ class RestResult {
   /// Sự soi rọi của Tro tàn: không mất Độ Sáng, Sanity hồi 100%, [Được Che Chở].
   final bool ashFlareActive;
 
-  /// Kẻ dòm ngó vô hình: ngày hôm sau tỷ lệ gặp quái tăng vọt 80%.
-  final bool invisibleWatcherActive;
+  /// Kẻ trộm tro tàn: số % Độ Sáng bị đánh cắp (0 nếu bị ăn trộm đồ thay).
+  final int emberThiefBrightnessLost;
+
+  /// Ác mộng: debuff [Tim Đập Mạnh] kích hoạt – hành động tốn gấp đôi Thể Lực hôm nay.
+  final bool racingHeartActive;
+
+  /// Đột kích bất ngờ: debuff [Ngái Ngủ] kích hoạt – kẻ thù đánh lượt đầu trong trận chiến.
+  final bool sleepyActive;
+
+  /// Ranh giới đột tử: debuff [Sợ Hãi] kích hoạt – kỹ năng đặc biệt bị khóa trong chiến đấu.
+  final bool fearActive;
 
   const RestResult({
     required this.event,
@@ -93,7 +152,192 @@ class RestResult {
     this.vaultSongExtraHp = 0,
     this.vaultSongExtraLanternCost = 0,
     this.ashFlareActive = false,
-    this.invisibleWatcherActive = false,
+    this.emberThiefBrightnessLost = 0,
+    this.racingHeartActive = false,
+    this.sleepyActive = false,
+    this.fearActive = false,
+  });
+}
+
+/// Kết quả sau một lần Tập Luyện.
+class TrainingResult {
+  final TrainingType type;
+
+  /// false = không đủ Thể Lực hoặc Độ No để thực hiện.
+  final bool success;
+
+  final int staminaCost;
+  final int hungerCost;
+
+  /// Giá trị chỉ số trước khi tập.
+  final int statBefore;
+
+  /// Giá trị chỉ số sau khi tập (tăng 1 nếu [leveledUp]).
+  final int statAfter;
+
+  /// EXP trước khi nhận phần thưởng.
+  final double expBefore;
+
+  /// EXP sau khi nhận phần thưởng (phần dư nếu lên cấp, giữ nguyên nếu chưa).
+  final double expAfter;
+
+  /// EXP thực sự nhận được lần này (0 / 0.5 / 1.0 / 1.5 / 3.0 / 5.0...).
+  final double expGain;
+
+  /// EXP cần để lên cấp tiếp theo (0.0 = đã đạt tối đa).
+  final double expNeeded;
+
+  /// Chỉ số có tăng lên trong lần tập này không.
+  final bool leveledUp;
+
+  // ── Sự kiện Vung Vũ Khí Khan ─────────────────────────────────────────────
+
+  /// Sự kiện ngẫu nhiên xảy ra (null với các loại tập khác).
+  final StrengthTrainingEvent? strengthEvent;
+
+  /// Thay đổi HP do sự kiện tập luyện (0 hoặc âm).
+  final int hpChange;
+
+  /// Thay đổi Độ Tỉnh Táo do sự kiện.
+  final int sanityTrainChange;
+
+  /// Thay đổi Nhân Tính do sự kiện (chỉ Tiếng gọi Vực thẳm).
+  final int humanityTrainChange;
+
+  /// Vật phẩm rơi ra khi Vô tình khám phá.
+  final Item? itemDropped;
+
+  /// Trạng thái [Chảy Máu] vừa được kích hoạt (2 HP/lượt × 3 lượt combat).
+  final bool bleedActive;
+
+  /// Thể lực vừa bị cạn về 0 (Vắt kiệt sinh mệnh).
+  final bool staminaDrained;
+
+  /// Sự kiện buộc vào combat ngay lập tức (Thu hút hiểm nguy).
+  final bool navigateToCombat;
+
+  // ── EXP Nhanh Nhẹn (chỉ strength training) ──────────────────────────────
+
+  /// EXP nhận được cho Nhanh Nhẹn lần này.
+  final double agiExpGain;
+
+  /// AGI trước khi tập.
+  final int agiStatBefore;
+
+  /// AGI sau khi tập.
+  final int agiStatAfter;
+
+  /// agiExp trước khi nhận phần thưởng.
+  final double agiExpBefore;
+
+  /// agiExp sau khi nhận phần thưởng.
+  final double agiExpAfter;
+
+  /// EXP cần để nâng AGI tiếp theo.
+  final double agiExpNeeded;
+
+  /// AGI có tăng lên trong lần tập này không.
+  final bool agiLeveledUp;
+
+  // ── Sự kiện Khuân Vác Xà Gồ ────────────────────────────────────────────
+
+  /// Sự kiện ngẫu nhiên của Khuân Vác Xà Gồ (null với các loại tập khác).
+  final EnduranceTrainingEvent? enduranceEvent;
+
+  /// EXP nhận được cho Phòng Thủ (nhánh DEF) lần này.
+  final double defExpGain;
+
+  /// bonusDefense trước khi tập.
+  final int defStatBefore;
+
+  /// bonusDefense sau khi tập.
+  final int defStatAfter;
+
+  /// defExp trước khi nhận phần thưởng.
+  final double defExpBefore;
+
+  /// defExp sau khi nhận phần thưởng.
+  final double defExpAfter;
+
+  /// EXP cần để nâng DEF tiếp theo.
+  final double defExpNeeded;
+
+  /// DEF có tăng lên trong lần tập này không.
+  final bool defLeveledUp;
+
+  /// Thể lực được hồi từ sự kiện (Ý chí sắt đá +15).
+  final int staminaGainFromEvent;
+
+  /// [Trật Khớp] vừa kích hoạt trong lần tập này.
+  final bool dislocatedActive;
+
+  /// [Nhiễm Trùng] vừa kích hoạt trong lần tập này.
+  final bool infectionActive;
+
+  // ── Sự kiện Ngồi Thiền Trước Lửa ─────────────────────────────────────────
+
+  /// Sự kiện ngẫu nhiên của Ngồi Thiền (null với các loại tập khác).
+  final MeditationTrainingEvent? meditationEvent;
+
+  /// Nhánh thiền được chọn ngẫu nhiên (1 = Mở rộng, 2 = Xoa dịu, 3 = Cân Bằng).
+  final int meditationBranch;
+
+  /// Sanity hồi thêm từ Nhánh 2/3 (Xoa dịu Tâm Trí / Cân Bằng).
+  final int sanityHealFromBranch;
+
+  /// Max Sanity tăng thêm khi Ý Chí lên cấp qua Nhánh 1/3.
+  final int maxSanityIncrease;
+
+  /// [Bỏng Nhẹ] vừa kích hoạt (1 HP/lượt combat × 3 ngày).
+  final bool burnActive;
+
+  /// Lồng Đèn mất thêm do sự kiện Bóng Tối Chực Chờ.
+  final int lanternLossFromEvent;
+
+  const TrainingResult({
+    required this.type,
+    required this.success,
+    this.staminaCost = 0,
+    this.hungerCost = 0,
+    this.statBefore = 0,
+    this.statAfter = 0,
+    this.expBefore = 0.0,
+    this.expAfter = 0.0,
+    this.expGain = 0.0,
+    this.expNeeded = 1.0,
+    this.leveledUp = false,
+    this.strengthEvent,
+    this.hpChange = 0,
+    this.sanityTrainChange = 0,
+    this.humanityTrainChange = 0,
+    this.itemDropped,
+    this.bleedActive = false,
+    this.staminaDrained = false,
+    this.navigateToCombat = false,
+    this.agiExpGain = 0.0,
+    this.agiStatBefore = 0,
+    this.agiStatAfter = 0,
+    this.agiExpBefore = 0.0,
+    this.agiExpAfter = 0.0,
+    this.agiExpNeeded = 1.0,
+    this.agiLeveledUp = false,
+    this.enduranceEvent,
+    this.defExpGain = 0.0,
+    this.defStatBefore = 0,
+    this.defStatAfter = 0,
+    this.defExpBefore = 0.0,
+    this.defExpAfter = 0.0,
+    this.defExpNeeded = 1.0,
+    this.defLeveledUp = false,
+    this.staminaGainFromEvent = 0,
+    this.dislocatedActive = false,
+    this.infectionActive = false,
+    this.meditationEvent,
+    this.meditationBranch = 0,
+    this.sanityHealFromBranch = 0,
+    this.maxSanityIncrease = 0,
+    this.burnActive = false,
+    this.lanternLossFromEvent = 0,
   });
 }
 
@@ -104,7 +348,7 @@ class CharacterDefaults {
 
   // ── Trạng Thái Sinh Tồn ──────────────────────────────────────────────────
   static const int hp = 50;
-  static const int stamina = 30;
+  static const int stamina = 50;
   static const int hunger = 100;
 
   // ── Chỉ Số Chiến Đấu ────────────────────────────────────────────────────
@@ -123,6 +367,10 @@ class CharacterDefaults {
   /// Cảnh Giới ban đầu (Cấp 1 – Kẻ Nhặt Rác).
   static const int realm = 1;
 
+  // ── Giới hạn & EXP Chỉ Số Chiến Đấu ──────────────────────────────────────
+  /// Cấp tối đa của mỗi chỉ số chiến đấu (str / vit / agi / will).
+  static const int maxStatLevel = 100;
+
   // ── Ngưỡng ───────────────────────────────────────────────────────────────
   /// Độ No dưới mức này sẽ gây tụt Máu mỗi ngày.
   static const int hungerDangerThreshold = 20;
@@ -137,7 +385,7 @@ class CharacterDefaults {
   static const int sanityHallucinationThreshold = 30;
 
   /// Lượng Máu tối đa tăng thêm mỗi điểm VIT khi nâng cấp Thể Chất.
-  static const int hpPerVitPoint = 10;
+  static const int hpPerVitPoint = 5;
 }
 
 /// Nhân vật người chơi trong *One Hundred Sunless Days*.
@@ -228,6 +476,71 @@ class Character {
   /// Kẻ đứng nhìn bạn ngủ vẫn đang rình rập quanh Nhà Thờ. Xóa khi bắt đầu ngày mới.
   bool invisibleWatcherActive;
 
+  /// [Tim Đập Mạnh] từ "Ác Mộng Từ Vực Thẳm".
+  /// Mọi hành động tiêu hao Thể Lực khi Khám Phá và Tập Luyện đều tốn gấp đôi. Xóa khi bắt đầu ngày mới.
+  bool racingHeartActive;
+
+  /// [Ngái Ngủ] từ "Đột Kích Bất Ngờ".
+  /// Kẻ thù luôn đánh lượt đầu tiên trong trận chiến đó. Xóa khi bắt đầu ngày mới.
+  bool sleepyActive;
+
+  /// [Sợ Hãi] từ "Ranh Giới Đột Tử".
+  /// Khóa toàn bộ kỹ năng đặc biệt trong chiến đấu. Xóa khi bắt đầu ngày mới.
+  bool fearActive;
+
+  // ── Kinh Nghiệm Chỉ Số ──────────────────────────────────────────────────
+
+  /// EXP tích lũy cho Sức Mạnh.
+  /// Dùng double vì sự kiện ngẫu nhiên có thể trao 0.5 hoặc 1.5 EXP.
+  double strExp;
+
+  /// EXP tích lũy cho Nhanh Nhẹn.
+  double agiExp;
+
+  /// EXP tích lũy cho Bền Bỉ.
+  double vitExp;
+
+  /// EXP tích lũy cho Ý Chí.
+  double willExp;
+
+  /// Số lượt trạng thái [Chảy Máu] còn lại trong combat. 0 = không chảy máu.
+  int bleedTurnsRemaining;
+
+  /// Sát thương HP/lượt khi đang [Chảy Máu].
+  int bleedDamagePerTurn;
+
+  /// EXP tích lũy cho Phòng Thủ (khuân vác xà gồ – nhánh DEF).
+  double defExp;
+
+  /// [Trật Khớp] đang hoạt động – giảm né tránh và tốc độ trong ngày.
+  bool dislocatedActive;
+
+  /// [Nhiễm Trùng] đang hoạt động – mất thêm HP mỗi ngày.
+  bool infectionActive;
+
+  /// Max Sanity – mặc định 100, có thể tăng theo Ý Chí qua Thiền Định Nhánh 1/3.
+  int maxSanity;
+
+  /// Số ngày còn lại của trạng thái [Bỏng Nhẹ] trong combat.
+  int burnTurnsRemaining;
+
+  /// Sát thương HP/lượt khi đang [Bỏng Nhẹ].
+  int burnDamagePerTurn;
+
+  /// Số lượt [Nhiễm Độc] còn lại. 0 = không nhiễm độc.
+  int poisonedTurnsRemaining;
+
+  /// Số lượt [Cuồng Huyết] còn lại. 0 = không có buff.
+  int bloodlustTurnsRemaining;
+
+  // ── Trang Bị Hiện Tại ────────────────────────────────────────────────────
+
+  /// Vũ khí đang trang bị (null = không trang bị).
+  Item? equippedWeapon;
+
+  /// Áo giáp đang trang bị (null = không trang bị).
+  Item? equippedArmor;
+
   // ── Hàm Khởi Tạo ────────────────────────────────────────────────────────
 
   Character({
@@ -253,16 +566,34 @@ class Character {
     this.toxicFogActive = false,
     this.ashFlareProtection = false,
     this.invisibleWatcherActive = false,
+    this.racingHeartActive = false,
+    this.sleepyActive = false,
+    this.fearActive = false,
+    this.strExp = 0.0,
+    this.agiExp = 0.0,
+    this.vitExp = 0.0,
+    this.willExp = 0.0,
+    this.bleedTurnsRemaining = 0,
+    this.bleedDamagePerTurn = 0,
+    this.defExp = 0.0,
+    this.dislocatedActive = false,
+    this.infectionActive = false,
+    this.maxSanity = CharacterDefaults.sanity,
+    this.burnTurnsRemaining = 0,
+    this.burnDamagePerTurn = 0,
+    this.poisonedTurnsRemaining = 0,
+    this.bloodlustTurnsRemaining = 0,
+    this.equippedWeapon,
+    this.equippedArmor,
   })  : maxHp = maxHp ?? CharacterDefaults.hp,
         maxStamina = maxStamina ?? CharacterDefaults.stamina,
         maxHunger = maxHunger ?? CharacterDefaults.hunger,
         inventory = inventory ?? _defaultInventory();
 
-  /// Balo khởi điểm: Lồng Đèn Xương (độc nhất) + 2 Bánh Mì Mốc Tím.
+  /// Balo khởi điểm: chỉ có Lồng Đèn Xương (độc nhất).
   static Inventory _defaultInventory() {
     final inv = Inventory();
     inv.add(ItemRegistry.boneLantern);
-    inv.add(ItemRegistry.moldBread, count: 2);
     return inv;
   }
 
@@ -286,12 +617,18 @@ class Character {
   /// Công thức: STR + weaponBonus
   int attackPower({int weaponBonus = 0}) => str + weaponBonus;
 
+  /// Tổng tấn công bao gồm vũ khí đang trang bị.
+  int get totalAttack => str + (equippedWeapon?.atkBonus ?? 0);
+
   /// Phòng Thủ hiện tại – chỉ đến từ trang bị, kỹ năng và cảnh giới cao hơn.
   /// Không thể nâng qua điểm chỉ số thông thường.
   int get defense => bonusDefense;
 
   /// Tổng phòng thủ khi tính thêm bonus tức thời từ trang bị (dùng trong combat).
   int defensePower({int armorBonus = 0}) => bonusDefense + armorBonus;
+
+  /// Tổng phòng thủ bao gồm áo giáp đang trang bị.
+  int get totalDefense => bonusDefense + (equippedArmor?.defBonus ?? 0);
 
   /// Trả về true nếu nhân vật này đánh trước so với [enemyAgi] trong lượt này.
   /// Ngang điểm thì người chơi được ưu tiên.
@@ -313,26 +650,9 @@ class Character {
   }
 
   /// Áp dụng công thức Giáp lên [rawDamage] rồi trừ Máu.
-  /// Sát thương thực tế = rawDamage × (50 / (50 + Giáp)), làm tròn về số nguyên gần nhất.
-  /// Tối thiểu 1 điểm sát thương nếu rawDamage > 0 (Giáp không thể hoàn toàn vô hiệu hóa đòn đánh).
+  /// Xem [CombatFormulas.applyArmor] để biết chi tiết công thức.
   void takeDamageWithArmor(int rawDamage) {
-    takeDamage(applyArmor(rawDamage, bonusDefense));
-  }
-
-  /// Công thức Giáp thuần túy (static – dùng được ở bất kỳ đâu).
-  ///
-  /// Sát thương thực tế = [rawDamage] × (50 / (50 + [armorValue])), làm tròn.
-  /// Tối thiểu 1 nếu [rawDamage] > 0; trả về 0 nếu [rawDamage] ≤ 0.
-  ///
-  /// Ví dụ:
-  ///   applyArmor(10, 0)  → 10
-  ///   applyArmor(10, 50) → 5   (giảm 50%)
-  ///   applyArmor(10, 200)→ 2   (giảm 80%)
-  static int applyArmor(int rawDamage, int armorValue) {
-    if (rawDamage <= 0) return 0;
-    if (armorValue <= 0) return rawDamage;
-    final double reduced = rawDamage * 50 / (50 + armorValue);
-    return reduced.round().clamp(1, rawDamage);
+    takeDamage(CombatFormulas.applyArmor(rawDamage, bonusDefense));
   }
 
   /// Hồi Máu thêm [amount]. Giới hạn trong [0, maxHp].
@@ -383,7 +703,7 @@ class Character {
   /// Thay đổi Độ Tỉnh Táo theo [delta] (dương = hồi phục, âm = suy giảm).
   /// Giới hạn trong [0, 100].
   void changeSanity(int delta) {
-    sanity = (sanity + delta).clamp(0, 100);
+    sanity = (sanity + delta).clamp(0, maxSanity);
   }
 
   // ── Tro Tàn (Tiền Tệ / Kinh Nghiệm) ─────────────────────────────────────
@@ -444,25 +764,40 @@ class Character {
         LanternSystem.rollNightEvent(lanternDurability, rng);
 
     // ── 3. Hồi Thể Lực ───────────────────────────────────────────────────
-    // nightRaid và toxicFog chỉ hồi 50%; sadMemory hồi đầy nhưng trừ 15 lại.
-    if (event == NightEvent.nightRaid || event == NightEvent.toxicFog) {
-      stamina = (maxStamina * 0.5).round();
+    // Tỷ lệ hồi cơ bản theo Độ Sáng: bright=100%, dim=75%, dark=50%.
+    // Extinguished: không hồi theo tỷ lệ, chỉ +10 Thể Lực.
+    final BrightnessLevel brightnessLevel = LanternSystem.levelOf(lanternDurability);
+    if (brightnessLevel == BrightnessLevel.extinguished) {
+      stamina = (stamina + 10).clamp(0, maxStamina);
     } else {
-      stamina = maxStamina;
+      final double baseStaminaPct = switch (brightnessLevel) {
+        BrightnessLevel.bright       => 1.00,
+        BrightnessLevel.dim          => 0.75,
+        BrightnessLevel.dark         => 0.50,
+        BrightnessLevel.extinguished => 1.00, // unreachable
+      };
+      // nightRaid và toxicFog chỉ hồi 50%, bất kể Độ Sáng.
+      if (event == NightEvent.nightRaid || event == NightEvent.toxicFog) {
+        stamina = (maxStamina * 0.5).round();
+      } else {
+        stamina = (maxStamina * baseStaminaPct).round();
+      }
     }
-    // sadMemory: full restore → trừ 15 (sự day dứt buổi sáng)
-    int bonusStaminaLoss = 0;
-    if (event == NightEvent.sadMemory) {
-      bonusStaminaLoss = 15;
-      stamina = (stamina - bonusStaminaLoss).clamp(0, maxStamina);
-    }
+    const int bonusStaminaLoss = 0;
 
     // ── 4. Hồi Máu theo bảng Độ Sáng ─────────────────────────────────────
-    // vaultSong hồi thêm +10% maxHp (ngủ quá say, ngon giấc).
-    final double baseHealPct  = LanternSystem.sleepHpHealPercent(lanternDurability);
-    final double vaultBonus   = (event == NightEvent.vaultSong) ? 0.10 : 0.0;
-    final double totalHealPct = baseHealPct + vaultBonus;
-    final int vaultSongExtraHp = (maxHp * vaultBonus).round();
+    // vaultSong (bright/dim): hồi thêm +10% maxHp (ngủ quá say, ngon giấc).
+    // vaultSong (dark): hút cạn sức sống → mất 15% HP thay vì hồi.
+    final bool vaultSongDarkDrain =
+        event == NightEvent.vaultSong && brightnessLevel == BrightnessLevel.dark;
+    final double baseHealPct = LanternSystem.sleepHpHealPercent(lanternDurability);
+    final double vaultBonus =
+        (event == NightEvent.vaultSong && !vaultSongDarkDrain) ? 0.10 : 0.0;
+    final double totalHealPct =
+        vaultSongDarkDrain ? -0.15 : (baseHealPct + vaultBonus);
+    final int vaultSongExtraHp = vaultSongDarkDrain
+        ? -(maxHp * 0.15).round()
+        : (maxHp * vaultBonus).round();
 
     final int hpHealed;
     if (totalHealPct >= 0) {
@@ -478,15 +813,11 @@ class Character {
     int sanityChange = LanternSystem.sleepSanityChange(lanternDurability);
     switch (event) {
       case NightEvent.nightmare:
-        sanityChange = (sanityChange > 0 ? 0 : sanityChange) - 10;
+        sanityChange -= 15;
       case NightEvent.nightRaid:
         sanityChange = 0;
-      case NightEvent.outsidePlea:
-        sanityChange -= 5; // tội lỗi cắn rứt thêm
-      case NightEvent.vaultSong:
-        sanityChange -= 10; // điệu hát của ác linh
-      case NightEvent.invisibleWatcher:
-        sanityChange -= 20; // lạnh sống lưng khi nhìn thấy dấu vết
+      case NightEvent.sadMemory:
+        sanityChange -= 10; // nỗi đau dằn vặt khi nhớ lại thế giới cũ
       default:
         break;
     }
@@ -519,73 +850,115 @@ class Character {
     bool   toxicFogResult        = false;
     int    vaultSongExtraLantern = 0;
     bool   ashFlareResult        = false;
-    bool   invisibleWatcherResult = false;
+    int    emberThiefBrightnessLost = 0;
+    bool   racingHeartResult      = false;
+    bool   sleepyResult           = false;
+    bool   fearResult             = false;
 
     switch (event) {
       case NightEvent.blindWhisper:
+        // Buff [Khám Phá Ngày Mai]: tăng tỷ lệ nhặt nguyên liệu tốt hôm sau.
         blindWhisperBonusActive = true;
         blindWhisperBonus = true;
 
       case NightEvent.emberThief:
+        // 50% ăn trộm 1 vật phẩm tiêu hao (Lương Thực hoặc Y Tế)
+        // 50% đánh cắp 10% Độ Sáng Lồng Đèn
         if (rng.nextBool()) {
-          embersLost = 15.clamp(0, embers);
-          embers -= embersLost;
+          final stealableEntries = inventory.consumables
+              .where((e) => e.item.group == ItemGroup.food || e.item.group == ItemGroup.medical)
+              .toList();
+          if (stealableEntries.isNotEmpty) {
+            foodStolen = stealableEntries[rng.nextInt(stealableEntries.length)].item;
+            inventory.remove(foodStolen!.id);
+          } else {
+            // Không có đồ → đánh cắp Độ Sáng thay
+            emberThiefBrightnessLost = (lanternDurability * 0.10).round();
+            lanternDurability = (lanternDurability - emberThiefBrightnessLost).clamp(0, 100);
+          }
         } else {
+          emberThiefBrightnessLost = (lanternDurability * 0.10).round();
+          lanternDurability = (lanternDurability - emberThiefBrightnessLost).clamp(0, 100);
+        }
+
+      case NightEvent.nightmare:
+        // Debuff [Tim Đập Mạnh]: Khám Phá và Tập Luyện tốn gấp đôi Thể Lực.
+        racingHeartActive = true;
+        racingHeartResult = true;
+
+      case NightEvent.nightRaid:
+        navigateToCombat = true;
+        // Extinguished: debuff [Ngái Ngủ] – kẻ thù luôn đánh lượt đầu trong trận chiến.
+        if (brightnessLevel == BrightnessLevel.extinguished) {
+          sleepyActive = true;
+          sleepyResult = true;
+        }
+
+      case NightEvent.suddenDeathDoor:
+        // HP về đúng 1. Áp dụng trực tiếp thay vì qua heal/takeDamage.
+        hp = 1;
+        // Debuff [Sợ Hãi]: khóa toàn bộ kỹ năng đặc biệt trong chiến đấu.
+        fearActive = true;
+        fearResult = true;
+
+      case NightEvent.sadMemory:
+        // +2 Nhân Tính (hồi ức ấm áp) nhưng -10 Tỉnh Táo (nỗi đau dằn vặt).
+        humanityChange = 2;
+        changeHumanity(2);
+
+      case NightEvent.outsidePlea:
+        // Sub-roll: 50% không mở cửa | 25% mở → bị trộm đồ ăn | 25% mở → bị tấn công
+        final double pleaRoll = rng.nextDouble();
+        if (pleaRoll < 0.50) {
+          // Không mở cửa → mất 5 Nhân Tính vì tội lỗi cắn rứt
+          humanityChange = -5;
+          changeHumanity(-5);
+        } else if (pleaRoll < 0.75) {
+          // Mở cửa → bị trộm mất 1 Lương Thực
           final foodEntries = inventory.consumables
               .where((e) => e.item.group == ItemGroup.food)
               .toList();
           if (foodEntries.isNotEmpty) {
-            foodStolen = foodEntries[rng.nextInt(foodEntries.length)].item;
-            inventory.remove(foodStolen.id);
-          } else {
-            embersLost = 15.clamp(0, embers);
-            embers -= embersLost;
+            outsidePleaItem = foodEntries[rng.nextInt(foodEntries.length)].item;
+            inventory.remove(outsidePleaItem!.id);
           }
+        } else {
+          // Mở cửa → bị tấn công → chuyển sang combat
+          navigateToCombat = true;
         }
-
-      case NightEvent.nightRaid:
-        navigateToCombat = true;
-
-      case NightEvent.sadMemory:
-        humanityChange = 15;
-        changeHumanity(15);
-
-      case NightEvent.outsidePlea:
-        // Mất Nhân Tính vì đã bỏ mặc người cầu cứu
-        humanityChange = -10;
-        changeHumanity(-10);
-        // Nhặt được 1 vật phẩm ngẫu nhiên từ xác
-        const lootPool = [ItemRegistry.rottenMeat, ItemRegistry.moldBread];
-        outsidePleaItem = lootPool[rng.nextInt(lootPool.length)];
-        inventory.add(outsidePleaItem);
 
       case NightEvent.toxicFog:
         toxicFogActive = true;  // [Tức Ngực] kéo dài sang ngày hôm sau
         toxicFogResult = true;
 
       case NightEvent.vaultSong:
-        // Đèn bị trừ thêm 15 vì quên canh lửa
-        vaultSongExtraLantern = 15;
-        lanternDurability = (lanternDurability - vaultSongExtraLantern).clamp(0, 100);
+        if (brightnessLevel == BrightnessLevel.dark) {
+          // Hút cạn sức sống: đèn tụt về 0 hoàn toàn.
+          vaultSongExtraLantern = lanternDurability;
+          lanternDurability = 0;
+        } else {
+          // Quên canh lửa: đèn bị trừ thêm 15.
+          vaultSongExtraLantern = 15;
+          lanternDurability = (lanternDurability - vaultSongExtraLantern).clamp(0, 100);
+        }
 
       case NightEvent.ashFlare:
-        // Không bị trừ Độ Sáng đêm nay
+        // Không bị trừ Độ Sáng đêm nay.
         lanternDurability = (lanternDurability + LanternSystem.restCost).clamp(0, 100);
-        ashFlareProtection = true; // [Được Che Chở] hôm nay
+        // Hồi ĐầY Độ Tỉnh Táo + buff [Được Che Chở] miễn nhiễm debuff cả ngày.
+        ashFlareProtection = true;
         ashFlareResult = true;
-
-      case NightEvent.invisibleWatcher:
-        this.invisibleWatcherActive = true; // 80% monster rate hôm nay
-        invisibleWatcherResult = true;
 
       default:
         break;
     }
 
     // ── 8. Xóa trạng thái cũ từ ngày trước ───────────────────────────────
-    // (toxicFog và invisibleWatcher mới vừa được set lại ở trên nếu cần)
+    // (toxicFog mới vừa được set lại ở trên nếu cần)
     if (event != NightEvent.toxicFog) toxicFogActive = false;
-    if (event != NightEvent.invisibleWatcher) this.invisibleWatcherActive = false;
+    if (event != NightEvent.nightmare) racingHeartActive = false;
+    if (event != NightEvent.nightRaid) sleepyActive = false;
+    if (event != NightEvent.suddenDeathDoor) fearActive = false;
 
     // ── 9. Qua ngày mới ───────────────────────────────────────────────────
     currentDay++;
@@ -613,7 +986,10 @@ class Character {
       vaultSongExtraHp:        vaultSongExtraHp,
       vaultSongExtraLanternCost: vaultSongExtraLantern,
       ashFlareActive:          ashFlareResult,
-      invisibleWatcherActive:  invisibleWatcherResult,
+      emberThiefBrightnessLost: emberThiefBrightnessLost,
+      racingHeartActive:        racingHeartResult,
+      sleepyActive:             sleepyResult,
+      fearActive:               fearResult,
     );
   }
 
@@ -651,5 +1027,580 @@ class Character {
     hp = maxHp;
     stamina = maxStamina;
     return droppedEmbers;
+  }
+
+  // ── Tập Luyện ────────────────────────────────────────────────────────────
+
+  /// Số EXP cần để tăng từ [currentLevel] lên [currentLevel]+1.
+  /// Level 1→2: 1.0 · Level 2→3: 1.1 · Level 3→4: 1.2 · … (mỗi cấp +0.1)
+  static double expNeededToLevel(int currentLevel) {
+    if (currentLevel >= CharacterDefaults.maxStatLevel) return 0;
+    final double v = 1.0 + (currentLevel - 1) * 0.1;
+    return double.parse(v.toStringAsFixed(1));
+  }
+
+  /// Thực hiện một buổi Tập Luyện theo [type].
+  ///
+  /// Tiêu hao Thể Lực và Độ No; nếu không đủ trả về [TrainingResult.success] = false.
+  /// Với [TrainingType.strength], kết quả thực tế được quyết định bởi một sự kiện ngẫu nhiên.
+  TrainingResult train(TrainingType type) {
+    final int staminaCost = switch (type) {
+      TrainingType.strength   => 15,
+      TrainingType.endurance  => 20,
+      TrainingType.meditation => 5,
+    };
+    final int hungerCost = switch (type) {
+      TrainingType.strength   => 5,
+      TrainingType.endurance  => 10,
+      TrainingType.meditation => 5,
+    };
+
+    if (stamina < staminaCost || hunger < hungerCost) {
+      return TrainingResult(type: type, success: false);
+    }
+
+    stamina = (stamina - staminaCost).clamp(0, maxStamina);
+    hunger  = (hunger  - hungerCost ).clamp(0, maxHunger);
+
+    // Meditation: sự kiện sẽ xử lý thay đổi Sanity
+
+    // ── Sự kiện ngẫu nhiên khi Vung Vũ Khí Khan ──────────────────────────
+    StrengthTrainingEvent? strengthEvent;
+    double expGain            = 1.0; // Dùng cho endurance/meditation
+    double strExpGain         = 0.0; // STR EXP (strength training)
+    double agiExpGain         = 0.0; // AGI EXP (strength training)
+    int    hpChange           = 0;
+    int    sanityTrainChange  = 0;
+    int    humanityTrainChange = 0;
+    Item?  itemDropped;
+    bool   bleedActive        = false;
+    bool   staminaDrained     = false;
+    bool   navigateToCombat   = false;
+
+    if (type == TrainingType.strength) {
+      // [Hiểm họa Tập luyện]: cộng bonus tai nạn từ vũ khí trong balo.
+      final double weaponAccBonus = inventory.entries
+          .map((e) => e.item.trainingWeaponAccidentBonus)
+          .fold(0.0, (a, b) => a + b);
+      final double t0 = (0.25 - weaponAccBonus).clamp(0.0, 1.0); // normal (25%)
+      final double t1 = t0 + 0.12; // physicalInjury
+      final double t2 = t1 + 0.12; // psychTrauma
+      final double t3 = t2 + 0.10 + weaponAccBonus; // weaponAccident (luôn = 0.59)
+
+      final rng  = Random();
+      final roll = rng.nextDouble();
+
+      // Phân bổ EXP ngẫu nhiên: 0=chỉ STR, 1=chỉ AGI, 2=cả hai
+
+      if (roll < t0) {
+        // 25% – Bình thường
+        strengthEvent = StrengthTrainingEvent.normal;
+        final int s = rng.nextInt(3);
+        if (s == 0)      strExpGain = (rng.nextInt(2) + 1).toDouble(); // 1–2
+        else if (s == 1) agiExpGain = (rng.nextInt(2) + 1).toDouble(); // 1–2
+        else { strExpGain = 1.0; agiExpGain = 1.0; }
+      } else if (roll < t1) {
+        // 12% – Chấn thương thể xác
+        strengthEvent = StrengthTrainingEvent.physicalInjury;
+        hpChange  = -10;
+        takeDamage(10);
+        final int s = rng.nextInt(3);
+        if (s == 0)      strExpGain = rng.nextBool() ? 0.5 : 1.0;
+        else if (s == 1) agiExpGain = rng.nextBool() ? 0.5 : 1.0;
+        else { strExpGain = 0.5; agiExpGain = 0.5; }
+      } else if (roll < t2) {
+        // 12% – Tổn thương tâm lý – không nhận EXP
+        strengthEvent     = StrengthTrainingEvent.psychTrauma;
+        sanityTrainChange = -15;
+        changeSanity(-15);
+      } else if (roll < t3) {
+        // 10% – Tai nạn vũ khí
+        strengthEvent       = StrengthTrainingEvent.weaponAccident;
+        bleedActive         = true;
+        bleedTurnsRemaining = 3;
+        bleedDamagePerTurn  = 2;
+        final int s = rng.nextInt(3);
+        if (s == 0)      strExpGain = rng.nextBool() ? 0.5 : 1.0;
+        else if (s == 1) agiExpGain = rng.nextBool() ? 0.5 : 1.0;
+        else { strExpGain = 0.5; agiExpGain = 0.5; }
+      } else if (roll < 0.74) {
+        // 15% – Giác ngộ (Đột phá)
+        strengthEvent = StrengthTrainingEvent.breakthrough;
+        stamina       = (stamina + 10).clamp(0, maxStamina);
+        final int s = rng.nextInt(3);
+        if (s == 0)      strExpGain = (rng.nextInt(3) + 3).toDouble(); // 3–5
+        else if (s == 1) agiExpGain = (rng.nextInt(3) + 3).toDouble(); // 3–5
+        else { strExpGain = 3.0; agiExpGain = 3.0; }
+      } else if (roll < 0.86) {
+        // 12% – Vô tình khám phá
+        strengthEvent = StrengthTrainingEvent.accidentalFind;
+        final int s = rng.nextInt(3);
+        if (s == 0)      strExpGain = (rng.nextInt(2) + 1).toDouble(); // 1–2
+        else if (s == 1) agiExpGain = (rng.nextInt(2) + 1).toDouble(); // 1–2
+        else { strExpGain = 1.0; agiExpGain = 1.0; }
+      } else if (roll < 0.93) {
+        // 7% – Tiếng gọi Vực thẳm
+        strengthEvent       = StrengthTrainingEvent.abyssCall;
+        sanityTrainChange   = -10;
+        humanityTrainChange = -5;
+        changeSanity(-10);
+        changeHumanity(-5);
+        final int s = rng.nextInt(3);
+        if (s == 0)      strExpGain = 5.0;
+        else if (s == 1) agiExpGain = 5.0;
+        else { strExpGain = 3.0; agiExpGain = 3.0; }
+      } else if (roll < 0.97) {
+        // 4% – Vắt kiệt sinh mệnh
+        strengthEvent  = StrengthTrainingEvent.exhaustion;
+        staminaDrained = true;
+        stamina        = 0;
+        final int s = rng.nextInt(3);
+        if (s == 0)      strExpGain = 1.5 + rng.nextInt(4) * 0.5; // 1.5–3.0
+        else if (s == 1) agiExpGain = 1.5 + rng.nextInt(4) * 0.5; // 1.5–3.0
+        else { strExpGain = 1.5; agiExpGain = 1.5; }
+      } else {
+        // 3% – Thu hút hiểm nguy – không nhận EXP
+        strengthEvent    = StrengthTrainingEvent.dangerAttracted;
+        navigateToCombat = true;
+      }
+    }
+
+    // ── Thông tin chỉ số ──────────────────────────────────────────────────
+
+    if (type == TrainingType.strength) {
+      // ── STR ──────────────────────────────────────────────────────────────
+      final int    strStatBefore = str;
+      final double strExpBefore  = strExp;
+      int    strStatAfter  = str;
+      double strExpAfterV  = strExp;
+      bool   strLeveledUp  = false;
+      final double effectiveStrGain =
+          str >= CharacterDefaults.maxStatLevel ? 0.0 : strExpGain;
+      if (effectiveStrGain > 0) {
+        double pool = strExp + effectiveStrGain;
+        while (str < CharacterDefaults.maxStatLevel) {
+          final double needed = expNeededToLevel(str);
+          if (pool >= needed) {
+            pool -= needed;
+            str++;
+            strLeveledUp = true;
+          } else {
+            break;
+          }
+        }
+        strExp = str >= CharacterDefaults.maxStatLevel ? 0.0 : pool;
+      }
+      strStatAfter = str;
+      strExpAfterV = strExp;
+
+      // ── AGI ──────────────────────────────────────────────────────────────
+      final int    agiStatBefore = agi;
+      final double agiExpBefore  = agiExp;
+      int    agiStatAfterV = agi;
+      double agiExpAfterV  = agiExp;
+      bool   agiLeveledUpV = false;
+      final double effectiveAgiGain =
+          agi >= CharacterDefaults.maxStatLevel ? 0.0 : agiExpGain;
+      if (effectiveAgiGain > 0) {
+        double pool = agiExp + effectiveAgiGain;
+        while (agi < CharacterDefaults.maxStatLevel) {
+          final double needed = expNeededToLevel(agi);
+          if (pool >= needed) {
+            pool -= needed;
+            agi++;
+            agiLeveledUpV = true;
+          } else {
+            break;
+          }
+        }
+        agiExp = agi >= CharacterDefaults.maxStatLevel ? 0.0 : pool;
+      }
+      agiStatAfterV = agi;
+      agiExpAfterV  = agiExp;
+
+      return TrainingResult(
+        type:                type,
+        success:             true,
+        staminaCost:         staminaCost,
+        hungerCost:          hungerCost,
+        statBefore:          strStatBefore,
+        statAfter:           strStatAfter,
+        expBefore:           strExpBefore,
+        expAfter:            strExpAfterV,
+        expGain:             effectiveStrGain,
+        expNeeded:           expNeededToLevel(str),
+        leveledUp:           strLeveledUp,
+        agiExpGain:          effectiveAgiGain,
+        agiStatBefore:       agiStatBefore,
+        agiStatAfter:        agiStatAfterV,
+        agiExpBefore:        agiExpBefore,
+        agiExpAfter:         agiExpAfterV,
+        agiExpNeeded:        expNeededToLevel(agi),
+        agiLeveledUp:        agiLeveledUpV,
+        strengthEvent:       strengthEvent,
+        hpChange:            hpChange,
+        sanityTrainChange:   sanityTrainChange,
+        humanityTrainChange: humanityTrainChange,
+        itemDropped:         itemDropped,
+        bleedActive:         bleedActive,
+        staminaDrained:      staminaDrained,
+        navigateToCombat:    navigateToCombat,
+      );
+    }
+
+    // ── Khuân Vác Xà Gồ (Endurance) ──────────────────────────────────────
+    if (type == TrainingType.endurance) {
+      final rng  = Random();
+      final roll = rng.nextDouble();
+
+      EnduranceTrainingEvent enduranceEvt;
+      double vitExpGainE       = 0.0;
+      double defExpGainE       = 0.0;
+      int    hpChangeE         = 0;
+      int    sanityChangeE     = 0;
+      int    humanityChangeE   = 0;
+      Item?  itemDroppedE;
+      bool   staminaDrainedE   = false;
+      bool   navigateToCombatE = false;
+      int    staminaGainE      = 0;
+      bool   dislocated        = false;
+      bool   infected          = false;
+
+      // Xác suất: normal 25%, spinalInjury 12%, hiddenHazard 10%,
+      // psychWeight 10%, ironWill 15%, forgottenCave 12%,
+      // bloodInRock 7%, crushed 5%, collapseSound 4%
+      if (roll < 0.25) {
+        // 25% – Bình thường
+        enduranceEvt = EnduranceTrainingEvent.normal;
+        final int s = rng.nextInt(3);
+        if (s == 0)      defExpGainE = 1.5 + rng.nextInt(3) * 0.5; // 1.5–2.5
+        else if (s == 1) vitExpGainE = 1.5 + rng.nextInt(3) * 0.5;
+        else {
+          defExpGainE = (rng.nextInt(2) + 1).toDouble(); // 1–2
+          vitExpGainE = (rng.nextInt(2) + 1).toDouble();
+        }
+      } else if (roll < 0.37) {
+        // 12% – Chấn thương cột sống
+        enduranceEvt     = EnduranceTrainingEvent.spinalInjury;
+        dislocated       = true;
+        dislocatedActive = true;
+        final int s = rng.nextInt(3);
+        if (s == 0)      defExpGainE = rng.nextBool() ? 0.5 : 1.0;
+        else if (s == 1) vitExpGainE = rng.nextBool() ? 0.5 : 1.0;
+        else {
+          defExpGainE = rng.nextInt(3) * 0.5; // 0.0, 0.5, 1.0
+          vitExpGainE = rng.nextInt(3) * 0.5;
+        }
+      } else if (roll < 0.47) {
+        // 10% – Hiểm họa ẩn giấu
+        enduranceEvt    = EnduranceTrainingEvent.hiddenHazard;
+        hpChangeE       = -5;
+        takeDamage(5);
+        infected        = true;
+        infectionActive = true;
+        final int s = rng.nextInt(3);
+        if (s == 0)      defExpGainE = rng.nextBool() ? 0.5 : 1.0;
+        else if (s == 1) vitExpGainE = rng.nextBool() ? 0.5 : 1.0;
+        else {
+          defExpGainE = rng.nextInt(3) * 0.5;
+          vitExpGainE = rng.nextInt(3) * 0.5;
+        }
+      } else if (roll < 0.57) {
+        // 10% – Sức nặng tâm lý
+        enduranceEvt  = EnduranceTrainingEvent.psychologicalWeight;
+        sanityChangeE = -15;
+        changeSanity(-15);
+      } else if (roll < 0.72) {
+        // 15% – Ý chí sắt đá
+        enduranceEvt = EnduranceTrainingEvent.ironWill;
+        staminaGainE = 15;
+        stamina      = (stamina + 15).clamp(0, maxStamina);
+        final int s = rng.nextInt(3);
+        if (s == 0)      defExpGainE = 3.0 + rng.nextInt(3); // 3, 4, 5
+        else if (s == 1) vitExpGainE = 3.0 + rng.nextInt(3);
+        else {
+          defExpGainE = 2.0 + rng.nextInt(3); // 2, 3, 4
+          vitExpGainE = 2.0 + rng.nextInt(3);
+        }
+      } else if (roll < 0.84) {
+        // 12% – Hốc đất lãng quên
+        enduranceEvt = EnduranceTrainingEvent.forgottenCave;
+        final int s = rng.nextInt(3);
+        if (s == 0)      defExpGainE = 1.5 + rng.nextInt(3) * 0.5;
+        else if (s == 1) vitExpGainE = 1.5 + rng.nextInt(3) * 0.5;
+        else {
+          defExpGainE = (rng.nextInt(2) + 1).toDouble();
+          vitExpGainE = (rng.nextInt(2) + 1).toDouble();
+        }
+      } else if (roll < 0.91) {
+        // 7% – Hòa huyết vào đá
+        enduranceEvt      = EnduranceTrainingEvent.bloodInRock;
+        sanityChangeE     = -10;
+        humanityChangeE   = -5;
+        changeSanity(-10);
+        changeHumanity(-5);
+        final int s = rng.nextInt(3);
+        if (s == 0)      defExpGainE = 7.0;
+        else if (s == 1) vitExpGainE = 7.0;
+        else {
+          defExpGainE = 3.0 + rng.nextInt(2); // 3 hoặc 4
+          vitExpGainE = 3.0 + rng.nextInt(2);
+        }
+      } else if (roll < 0.96) {
+        // 5% – Bị nghiền nát
+        enduranceEvt    = EnduranceTrainingEvent.crushed;
+        hpChangeE       = -10;
+        takeDamage(10);
+        staminaDrainedE = true;
+        stamina         = 0;
+        final int s = rng.nextInt(3);
+        if (s == 0)      defExpGainE = 2.0 + rng.nextInt(4) * 0.5; // 2.0–3.5
+        else if (s == 1) vitExpGainE = 2.0 + rng.nextInt(4) * 0.5;
+        else {
+          defExpGainE = 1.5 + rng.nextInt(3) * 0.5; // 1.5–2.5
+          vitExpGainE = 1.5 + rng.nextInt(3) * 0.5;
+        }
+      } else {
+        // 4% – Âm thanh sụp đổ
+        enduranceEvt      = EnduranceTrainingEvent.collapseSound;
+        navigateToCombatE = true;
+      }
+
+      // ── VIT leveling ────────────────────────────────────────────────────
+      final int    vitStatBefore = vit;
+      final double vitExpBefore  = vitExp;
+      final double effectiveVitGain =
+          vit >= CharacterDefaults.maxStatLevel ? 0.0 : vitExpGainE;
+      bool vitLeveledUp = false;
+      if (effectiveVitGain > 0) {
+        double pool = vitExp + effectiveVitGain;
+        while (vit < CharacterDefaults.maxStatLevel) {
+          final double needed = expNeededToLevel(vit);
+          if (pool >= needed) {
+            pool -= needed;
+            vit++;
+            maxHp += CharacterDefaults.hpPerVitPoint;
+            hp = (hp + CharacterDefaults.hpPerVitPoint).clamp(0, maxHp);
+            vitLeveledUp = true;
+          } else break;
+        }
+        vitExp = vit >= CharacterDefaults.maxStatLevel ? 0.0 : pool;
+      }
+
+      // ── DEF leveling ────────────────────────────────────────────────────
+      final int    defStatBefore = bonusDefense;
+      final double defExpBefore  = defExp;
+      final double effectiveDefGain =
+          bonusDefense >= CharacterDefaults.maxStatLevel ? 0.0 : defExpGainE;
+      bool defLeveledUp = false;
+      if (effectiveDefGain > 0) {
+        double pool = defExp + effectiveDefGain;
+        while (bonusDefense < CharacterDefaults.maxStatLevel) {
+          final double needed = expNeededToLevel(bonusDefense);
+          if (pool >= needed) {
+            pool -= needed;
+            bonusDefense++;
+            defLeveledUp = true;
+          } else break;
+        }
+        defExp = bonusDefense >= CharacterDefaults.maxStatLevel ? 0.0 : pool;
+      }
+
+      return TrainingResult(
+        type:                 type,
+        success:              true,
+        staminaCost:          staminaCost,
+        hungerCost:           hungerCost,
+        statBefore:           vitStatBefore,
+        statAfter:            vit,
+        expBefore:            vitExpBefore,
+        expAfter:             vitExp,
+        expGain:              effectiveVitGain,
+        expNeeded:            expNeededToLevel(vit),
+        leveledUp:            vitLeveledUp,
+        enduranceEvent:       enduranceEvt,
+        defExpGain:           effectiveDefGain,
+        defStatBefore:        defStatBefore,
+        defStatAfter:         bonusDefense,
+        defExpBefore:         defExpBefore,
+        defExpAfter:          defExp,
+        defExpNeeded:         expNeededToLevel(bonusDefense),
+        defLeveledUp:         defLeveledUp,
+        hpChange:             hpChangeE,
+        sanityTrainChange:    sanityChangeE,
+        humanityTrainChange:  humanityChangeE,
+        itemDropped:          itemDroppedE,
+        staminaDrained:       staminaDrainedE,
+        navigateToCombat:     navigateToCombatE,
+        staminaGainFromEvent: staminaGainE,
+        dislocatedActive:     dislocated,
+        infectionActive:      infected,
+      );
+    }
+
+    // ── Ngồi Thiền Trước Lửa (Meditation) ───────────────────────────────────
+    {
+      final rng    = Random();
+      final roll   = rng.nextDouble();
+      final branch = rng.nextInt(3) + 1; // 1 = Mở rộng Tâm Trí, 2 = Xoa dịu, 3 = Cân Bằng
+
+      MeditationTrainingEvent meditationEvt;
+      double willExpGainM    = 0.0;
+      int    sanityHealM     = 0;
+      int    sanityChangeM   = 0;
+      int    humanityChangeM = 0;
+      int    hpChangeM       = 0;
+      Item?  itemDroppedM;
+      bool   staminaDrainedM   = false;
+      bool   navigateToCombatM = false;
+      bool   burnActiveM       = false;
+      int    lanternLossM      = 0;
+
+      // ── Xác định sự kiện ───────────────────────────────────────────────
+      if (roll < 0.35) {
+        // 35% – Tâm trí tĩnh lặng (Bình thường)
+        meditationEvt = MeditationTrainingEvent.normal;
+        switch (branch) {
+          case 1:  willExpGainM = 1.5 + rng.nextDouble();       // 1.5–2.5
+          case 2:  sanityHealM  = 15;
+          default: willExpGainM = 1.5; sanityHealM = 5;
+        }
+      } else if (roll < 0.47) {
+        // 12% – Ảo ảnh trong tro tàn
+        meditationEvt = MeditationTrainingEvent.psychHallucination;
+        sanityChangeM = -15;
+        changeSanity(-15);
+        switch (branch) {
+          case 1:  willExpGainM = 0.5 + rng.nextDouble() * 0.5; // 0.5–1.0
+          case 2:  sanityHealM  = 5;
+          default: willExpGainM = 0.5; sanityHealM = 2;
+        }
+      } else if (roll < 0.59) {
+        // 12% – Hơi nóng phỏng da
+        meditationEvt    = MeditationTrainingEvent.burnInjury;
+        hpChangeM        = -10;
+        takeDamage(10);
+        burnActiveM          = true;
+        burnTurnsRemaining   = 3;
+        burnDamagePerTurn    = 1;
+        switch (branch) {
+          case 1:  willExpGainM = 0.5 + rng.nextDouble() * 0.5; // 0.5–1.0
+          case 2:  sanityHealM  = 5;
+          default: willExpGainM = 0.5; sanityHealM = 2;
+        }
+      } else if (roll < 0.69) {
+        // 10% – Bóng tối chực chờ
+        meditationEvt = MeditationTrainingEvent.lanternFlicker;
+        lanternLossM  = (lanternDurability * 0.10).round().clamp(1, 100);
+        lanternDurability = (lanternDurability - lanternLossM).clamp(0, 100);
+        sanityChangeM = -5;
+        changeSanity(-5);
+        switch (branch) {
+          case 1:  willExpGainM = 0.5 + rng.nextDouble() * 0.5; // 0.5–1.0
+          case 2:  sanityHealM  = 5;
+          default: willExpGainM = 0.5; sanityHealM = 2;
+        }
+      } else if (roll < 0.77) {
+        // 8% – Tâm như minh cảnh (Giác ngộ)
+        meditationEvt = MeditationTrainingEvent.enlightenment;
+        switch (branch) {
+          case 1:  willExpGainM = 4.0 + rng.nextDouble() * 2.0;  // 4.0–6.0
+          case 2:  sanityHealM  = 40;
+          default: willExpGainM = 4.0; sanityHealM = 20;
+        }
+      } else if (roll < 0.85) {
+        // 8% – Cổ ngữ trong ngọn lửa (Vô tình khám phá)
+        meditationEvt = MeditationTrainingEvent.ancientScript;
+        // (Chưa có vật phẩm thưởng – sẽ được thêm lại)
+        switch (branch) {
+          case 1:  willExpGainM = 1.5 + rng.nextDouble();       // 1.5–2.5
+          case 2:  sanityHealM  = 15;
+          default: willExpGainM = 1.5; sanityHealM = 5;
+        }
+      } else if (roll < 0.90) {
+        // 5% – Lời thì thầm của Cổ Thần
+        meditationEvt   = MeditationTrainingEvent.abyssCall;
+        humanityChangeM = -10;
+        sanityChangeM   = -15;
+        changeHumanity(-10);
+        changeSanity(-15);
+        switch (branch) {
+          case 1:  willExpGainM = 7.0;
+          case 2:  sanityHealM  = 50;
+          default: willExpGainM = 5.0; sanityHealM = 25;
+        }
+      } else if (roll < 0.95) {
+        // 5% – Lạc bước cõi âm
+        meditationEvt  = MeditationTrainingEvent.soulWander;
+        staminaDrainedM = true;
+        stamina         = 0;
+        switch (branch) {
+          case 1:  willExpGainM = 2.0 + rng.nextDouble() * 1.5; // 2.0–3.5
+          case 2:  sanityHealM  = 10;
+          default: willExpGainM = 2.0; sanityHealM = 5;
+        }
+      } else {
+        // 5% – Cái bóng phản bội
+        meditationEvt    = MeditationTrainingEvent.shadowBetrayal;
+        navigateToCombatM = true;
+      }
+
+      // Áp dụng sanity heal từ nhánh
+      if (sanityHealM > 0) changeSanity(sanityHealM);
+
+      // ── Will leveling ──────────────────────────────────────────────────
+      final int    willStatBefore  = will;
+      final double willExpBefore   = willExp;
+      final double effectiveWillGain =
+          will >= CharacterDefaults.maxStatLevel ? 0.0 : willExpGainM;
+      bool willLeveledUp      = false;
+      int  maxSanityIncreaseM = 0;
+
+      if (effectiveWillGain > 0) {
+        double pool = willExp + effectiveWillGain;
+        while (will < CharacterDefaults.maxStatLevel) {
+          final double needed = expNeededToLevel(will);
+          if (pool >= needed) {
+            pool -= needed;
+            will++;
+            maxStamina += 5;
+            stamina = (stamina + 5).clamp(0, maxStamina);
+            // Nhánh 1 và 3 tăng Max Sanity khi lên cấp Ý Chí
+            if (branch == 1 || branch == 3) {
+              maxSanity += 2;
+              maxSanityIncreaseM += 2;
+            }
+            willLeveledUp = true;
+          } else break;
+        }
+        willExp = will >= CharacterDefaults.maxStatLevel ? 0.0 : pool;
+      }
+
+      return TrainingResult(
+        type:               type,
+        success:            true,
+        staminaCost:        staminaCost,
+        hungerCost:         hungerCost,
+        statBefore:         willStatBefore,
+        statAfter:          will,
+        expBefore:          willExpBefore,
+        expAfter:           willExp,
+        expGain:            effectiveWillGain,
+        expNeeded:          expNeededToLevel(will),
+        leveledUp:          willLeveledUp,
+        meditationEvent:    meditationEvt,
+        meditationBranch:   branch,
+        sanityHealFromBranch: sanityHealM,
+        maxSanityIncrease:  maxSanityIncreaseM,
+        sanityTrainChange:  sanityChangeM,
+        humanityTrainChange: humanityChangeM,
+        hpChange:           hpChangeM,
+        itemDropped:        itemDroppedM,
+        staminaDrained:     staminaDrainedM,
+        navigateToCombat:   navigateToCombatM,
+        burnActive:         burnActiveM,
+        lanternLossFromEvent: lanternLossM,
+      );
+    }
   }
 }

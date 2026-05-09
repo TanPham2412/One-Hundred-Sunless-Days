@@ -60,9 +60,20 @@ flutter:
   assets:
     - assets/images/backgrounds/
     - assets/images/backgrounds/rest/
+    - assets/images/backgrounds/event/
+    - assets/images/backgrounds/train/dry_weapon_swings/
+    - assets/images/backgrounds/train/lumber_hauling/
+    - assets/images/backgrounds/train/fire_meditation/
     - assets/images/monsters/
-    - assets/images/weapons/
     - assets/images/items/
+    - assets/images/items/food/
+    - assets/images/items/medical/
+    - assets/images/items/mental/
+    - assets/images/items/combat/
+    - assets/images/items/core/
+    - assets/images/items/weapon/
+    - assets/images/items/armor/
+    - assets/images/items/material/
 
   fonts:
     - family: ThaleahFat

@@ -28,6 +28,9 @@ class Inventory {
   static bool _isConsumable(Item item) {
     if (item.hasFlag(ItemFlag.material)) return false;
     if (item.hasFlag(ItemFlag.passive)) return false;
+    // Vũ khí và áo giáp luôn thuộc mục trang bị, không phải tiêu hao
+    if (item.group == ItemGroup.weapon) return false;
+    if (item.group == ItemGroup.armor) return false;
     return true;
   }
 

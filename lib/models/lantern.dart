@@ -30,7 +30,7 @@ class _NightWeights {
   final double toxicFog;
   final double vaultSong;
   final double ashFlare;
-  final double invisibleWatcher;
+  final double suddenDeathDoor;
 
   const _NightWeights({
     required this.deepSleep,
@@ -43,7 +43,7 @@ class _NightWeights {
     required this.toxicFog,
     required this.vaultSong,
     required this.ashFlare,
-    required this.invisibleWatcher,
+    required this.suddenDeathDoor,
   });
 }
 
@@ -80,8 +80,8 @@ class LanternSystem {
   /// Trả về [BrightnessLevel] tương ứng với giá trị [brightness] (0–100).
   static BrightnessLevel levelOf(int brightness) {
     if (brightness >= 70) return BrightnessLevel.bright;
-    if (brightness >= 30) return BrightnessLevel.dim;
-    if (brightness >= 1)  return BrightnessLevel.dark;
+    if (brightness >= 40) return BrightnessLevel.dim;
+    if (brightness >= 10) return BrightnessLevel.dark;
     return BrightnessLevel.extinguished;
   }
 
@@ -90,13 +90,13 @@ class LanternSystem {
   /// Thay đổi Sanity dựa trên Độ Sáng khi nghỉ ngơi.
   ///
   /// | Mức sáng           | Sanity  |
-  /// |-------------------|---------|
-  /// | Bright (75–100)   | +20     |
-  /// | Dim (40–74)       | +5      |
-  /// | Dark (15–39)      | 0       |
-  /// | Extinguished (0–14)| -15    |
+  /// |-------------------|----------|
+  /// | Bright (70–100)   | +15      |
+  /// | Dim (30–69)       | +5       |
+  /// | Dark (1–29)       | 0        |
+  /// | Extinguished (0)  | -15      |
   static int sleepSanityChange(int brightness) => switch (levelOf(brightness)) {
-        BrightnessLevel.bright       =>  20,
+        BrightnessLevel.bright       =>  15,
         BrightnessLevel.dim          =>   5,
         BrightnessLevel.dark         =>   0,
         BrightnessLevel.extinguished => -15,
@@ -121,31 +121,39 @@ class LanternSystem {
 
   // ── Bảng xác suất NightEvent ──────────────────────────────────────────────
   //
-  // bright (70–100%):  6 sự kiện, tổng = 1.00
-  // dim    (30–69%):   8 sự kiện, tổng = 1.00
-  // dark   ( 1–29%):   7 sự kiện, tổng = 1.00
-  // exting (    0%):   5 sự kiện, tổng = 1.00 — không có sự kiện tốt
+  // bright (70–100%):  3 sự kiện, tổng = 1.00
+  // dim    (40–69%):   3 sự kiện, tổng = 1.00
+  // dark   (10–39%):   3 sự kiện, tổng = 1.00
+  // exting ( 0– 9%):   2 sự kiện, tổng = 1.00
 
   static const Map<BrightnessLevel, _NightWeights> _weights = {
+    // 🟢 Bright – Giấc ngủ an bình
+    // [60%] Giấc Ngủ Sâu  | [30%] Tiếng Thì Thầm Kẻ Mù  | [10%] Sự Soi Rọi Tro Tàn
     BrightnessLevel.bright: _NightWeights(
-      deepSleep: 0.60, nightmare: 0.00, blindWhisper: 0.10, emberThief: 0.05,
-      nightRaid: 0.00, sadMemory: 0.15, outsidePlea: 0.05, toxicFog: 0.00,
-      vaultSong: 0.00, ashFlare: 0.05, invisibleWatcher: 0.00,
+      deepSleep: 0.60, nightmare: 0.00, blindWhisper: 0.30, emberThief: 0.00,
+      nightRaid: 0.00, sadMemory: 0.00, outsidePlea: 0.00, toxicFog: 0.00,
+      vaultSong: 0.00, ashFlare: 0.10, suddenDeathDoor: 0.00,
     ),
+    // 🟡 Dim – Giấc ngủ chập chờn
+    // [50%] Hồi Ức U Buồn  | [30%] Lời Cầu Cứu Ngoài Cửa  | [20%] Kẻ Trộm Tro Tàn
     BrightnessLevel.dim: _NightWeights(
-      deepSleep: 0.40, nightmare: 0.10, blindWhisper: 0.10, emberThief: 0.10,
-      nightRaid: 0.00, sadMemory: 0.10, outsidePlea: 0.05, toxicFog: 0.10,
-      vaultSong: 0.05, ashFlare: 0.00, invisibleWatcher: 0.00,
+      deepSleep: 0.00, nightmare: 0.00, blindWhisper: 0.00, emberThief: 0.20,
+      nightRaid: 0.00, sadMemory: 0.50, outsidePlea: 0.30, toxicFog: 0.00,
+      vaultSong: 0.00, ashFlare: 0.00, suddenDeathDoor: 0.00,
     ),
+    // 🟠 Dark – Bóng đè
+    // [40%] Ác Mộng Từ Vực Thẳm  | [35%] Cơn Bão Sương Độc  | [25%] Khúc Hát Từ Rường Cột
     BrightnessLevel.dark: _NightWeights(
-      deepSleep: 0.10, nightmare: 0.25, blindWhisper: 0.00, emberThief: 0.10,
-      nightRaid: 0.10, sadMemory: 0.00, outsidePlea: 0.00, toxicFog: 0.15,
-      vaultSong: 0.15, ashFlare: 0.00, invisibleWatcher: 0.15,
+      deepSleep: 0.00, nightmare: 0.40, blindWhisper: 0.00, emberThief: 0.00,
+      nightRaid: 0.00, sadMemory: 0.00, outsidePlea: 0.00, toxicFog: 0.35,
+      vaultSong: 0.25, ashFlare: 0.00, suddenDeathDoor: 0.00,
     ),
+    // 🔴 Extinguished – Đêm kinh hoàng
+    // [70%] Đột Kích Bất Ngờ  | [30%] Ranh Giới Đột Tử
     BrightnessLevel.extinguished: _NightWeights(
-      deepSleep: 0.00, nightmare: 0.30, blindWhisper: 0.00, emberThief: 0.00,
-      nightRaid: 0.25, sadMemory: 0.00, outsidePlea: 0.00, toxicFog: 0.10,
-      vaultSong: 0.15, ashFlare: 0.00, invisibleWatcher: 0.20,
+      deepSleep: 0.00, nightmare: 0.00, blindWhisper: 0.00, emberThief: 0.00,
+      nightRaid: 0.70, sadMemory: 0.00, outsidePlea: 0.00, toxicFog: 0.00,
+      vaultSong: 0.00, ashFlare: 0.00, suddenDeathDoor: 0.30,
     ),
   };
 
@@ -165,7 +173,8 @@ class LanternSystem {
     c += w.toxicFog;         if (roll < c) return NightEvent.toxicFog;
     c += w.vaultSong;        if (roll < c) return NightEvent.vaultSong;
     c += w.ashFlare;         if (roll < c) return NightEvent.ashFlare;
-    return NightEvent.invisibleWatcher;
+    c += w.suddenDeathDoor;  if (roll < c) return NightEvent.suddenDeathDoor;
+    return NightEvent.deepSleep; // fallback (không xảy ra nếu tổng xác suất = 1.0)
   }
 
   // ── Tiếp nhiên liệu ───────────────────────────────────────────────────────
