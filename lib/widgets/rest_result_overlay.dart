@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:one_hundred_sunless_days/l10n/app_strings.dart';
 import 'package:one_hundred_sunless_days/models/character.dart';
 import 'package:one_hundred_sunless_days/models/item.dart';
+import 'package:one_hundred_sunless_days/models/lantern.dart';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Overlay kết quả Nghỉ Ngơi – animated (dòng hiện từng cái, nút cuối)
@@ -46,124 +47,136 @@ class _RestResultOverlayState extends State<RestResultOverlay>
   @override
   void initState() {
     super.initState();
-    _lines = _buildLines(widget.result);
+    _lines = _buildLines(widget.result, widget.character);
     _startSequence();
   }
 
   // Xây danh sách các dòng chỉ số từ RestResult
-  List<_RestLine> _buildLines(RestResult r) {
+  List<_RestLine> _buildLines(RestResult r, Character character) {
     final lines = <_RestLine>[];
 
-    // Thể lực
-    if (r.nightRaidHalfStamina) {
+    // ── THỂ LỰC ─────────────────────────────────────────────────────────────
+    // Hiển thị delta thực tế (staminaAfter − staminaBefore)
+    final int staminaAfter = character.stamina;
+    final int staminaDelta = staminaAfter - r.staminaBefore;
+    if (staminaDelta > 0) {
       lines.add(_RestLine('+', AppStrings.get('templeStatStamina'),
-          AppStrings.get('restStaminaHalf'),
-          positive: false));
-    } else if (r.toxicFogActive) {
-      lines.add(_RestLine('+', AppStrings.get('templeStatStamina'),
-          AppStrings.get('restStaminaHalfFog'),
-          positive: false));
+          '+$staminaDelta', positive: true));
+    } else if (staminaDelta < 0) {
+      lines.add(_RestLine('−', AppStrings.get('templeStatStamina'),
+          '−${staminaDelta.abs()}', positive: false));
     } else {
-      lines.add(_RestLine('+', AppStrings.get('templeStatStamina'),
-          AppStrings.get('restStaminaFull'),
-          positive: true));
+      // Không thay đổi (đã đầy hoặc bị giới hạn)
+      lines.add(_RestLine('|', AppStrings.get('templeStatStamina'),
+          '±0', positive: true));
     }
 
-    // Máu
-    lines.add(_RestLine('+', AppStrings.get('templeStatHp'),
-        '+${r.hpHealed}',
-        positive: r.hpHealed >= 0));
+    // ── MÁU ──────────────────────────────────────────────────────────────────
+    if (r.event == NightEvent.suddenDeathDoor) {
+      // HP bị ép về 1 bất kể lượng hồi phục thực tế
+      lines.add(_RestLine('!', AppStrings.get('templeStatHp'),
+          AppStrings.get('restHpToOne'), positive: false));
+    } else {
+      // baseHpChange = HP thay đổi không tính phần extra của vaultSong
+      // (vaultSongExtraHp sẽ được hiển thị thành dòng riêng bên dưới)
+      final int baseHpChange = (r.event == NightEvent.vaultSong && r.vaultSongExtraHp > 0)
+          ? r.hpHealed - r.vaultSongExtraHp
+          : r.hpHealed;
+      final String hpPfx = baseHpChange >= 0 ? '+' : '!';
+      final String hpVal = baseHpChange >= 0
+          ? '+$baseHpChange'
+          : '−${baseHpChange.abs()}';
+      lines.add(_RestLine(hpPfx, AppStrings.get('templeStatHp'), hpVal,
+          positive: baseHpChange >= 0));
+    }
 
-    // Tỉnh táo
-    if (r.sanityChange != 0) {
+    // ── ĐỘ TỈNH TÁO (ẩn khi ashFlare – đã có dòng ★ bên dưới) ──────────────
+    if (r.sanityChange != 0 && !r.ashFlareActive)
       lines.add(_RestLine(
         r.sanityChange >= 0 ? '+' : '−',
         AppStrings.get('charStatSanity'),
-        '${r.sanityChange >= 0 ? '+' : ''}${r.sanityChange}',
+        r.sanityChange >= 0
+            ? '+${r.sanityChange}'
+            : '−${r.sanityChange.abs()}',
         positive: r.sanityChange >= 0,
       ));
-    }
 
-    // Độ no
+    // ── ĐỘ NO ─────────────────────────────────────────────────────────────────
     lines.add(_RestLine('−', AppStrings.get('templeStatHunger'),
-        '−${r.hungerLost}',
-        positive: false));
+        '−${r.hungerLost}', positive: false));
 
-    // Lồng đèn
-    lines.add(_RestLine('−', AppStrings.get('hudLantern'),
-        '−${r.lanternCost}',
-        positive: false));
+    // ── LỒNG ĐÈN (ẩn khi ashFlare) ──────────────────────────────────────────
+    if (!r.ashFlareActive)
+      lines.add(_RestLine('−', AppStrings.get('hudLantern'),
+          '−${r.lanternCost}', positive: false));
 
-    // Chết đói
+    // ── CHẾT ĐÓI ──────────────────────────────────────────────────────────────
     if (r.starvationDamage)
       lines.add(_RestLine('!', AppStrings.get('restStarvation'),
           '−${r.starvationHpLost} ${AppStrings.get('templeStatHp')}',
           positive: false));
 
-    // Chuột than cắp tro tàn
-    if (r.embersLost > 0)
-      lines.add(_RestLine('!', AppStrings.get('restEmberThiefStole'),
-          '−${r.embersLost} ${AppStrings.get('lanternRefuelCost')}',
-          positive: false));
-
-    // Chuột than cắp thức ăn
+    // ── CHUỘT THAN – cắp đồ ăn / y tế ──────────────────────────────────────
     if (r.foodStolen != null)
       lines.add(_RestLine('!', AppStrings.get('restFoodStolen'),
-          '−1 ${AppStrings.get(r.foodStolen!.nameKey)}',
-          positive: false));
+          '−1 ${AppStrings.get(r.foodStolen!.nameKey)}', positive: false));
 
-    // Thì thầm từ bóng tối
+    // ── CHUỘT THAN – hút Độ Sáng ────────────────────────────────────────────
+    if (r.emberThiefBrightnessLost > 0)
+      lines.add(_RestLine('!', AppStrings.get('restEmberThiefBrightness'),
+          '−${r.emberThiefBrightnessLost}', positive: false));
+
+    // ── THÌ THẦM TỪ BÓNG TỐI – khám phá ngày mai ────────────────────────────
     if (r.blindWhisperBonus)
       lines.add(_RestLine('✦', AppStrings.get('restBlindWhisperBonus'),
-          '+20%',
-          positive: true));
+          '+20%', positive: true));
 
-    // Nhân tính (hồi ức u buồn / lời cầu cứu)
+    // ── NHÂN TÍNH ─────────────────────────────────────────────────────────────
     if (r.humanityChange > 0)
       lines.add(_RestLine('+', AppStrings.get('restSadMemoryHumanity'),
-          '+${r.humanityChange}',
-          positive: true));
+          '+${r.humanityChange}', positive: true));
     if (r.humanityChange < 0)
       lines.add(_RestLine('!', AppStrings.get('restOutsidePleaHumanity'),
-          '${r.humanityChange}',
-          positive: false));
+          '−${r.humanityChange.abs()}', positive: false));
 
-    // Nỗi buồn (mất thể lực sáng hôm sau)
-    if (r.bonusStaminaLoss > 0)
-      lines.add(_RestLine('!', AppStrings.get('restSadMemoryStamina'),
-          '−${r.bonusStaminaLoss}',
-          positive: false));
-
-    // Lời cầu cứu ngoài cửa – nhặt được đồ
+    // ── LỜI CẦU CỨU – bị trộm vật phẩm ────────────────────────────────────
     if (r.outsidePleaItem != null)
-      lines.add(_RestLine('+', AppStrings.get('restOutsidePleaLoot'),
-          '+1 ${AppStrings.get(r.outsidePleaItem!.nameKey)}',
-          positive: true));
+      lines.add(_RestLine('!', AppStrings.get('restOutsidePleaStolen'),
+          '−1 ${AppStrings.get(r.outsidePleaItem!.nameKey)}', positive: false));
 
-    // Sương độc – trạng thái
+    // ── SƯƠNG ĐỘC – trạng thái [Tức Ngực] ────────────────────────────────────
     if (r.toxicFogActive)
       lines.add(_RestLine('!', AppStrings.get('restToxicFogStatus'), '',
           positive: false));
 
-    // Khúc hát từ rường cột
+    // ── KHÚC HÁT TỪ RƯỜNG CỘT – HP thêm / đèn mất thêm ─────────────────────
     if (r.vaultSongExtraHp > 0)
       lines.add(_RestLine('+', AppStrings.get('restVaultSongExtraHp'),
-          '+${r.vaultSongExtraHp}',
-          positive: true));
+          '+${r.vaultSongExtraHp}', positive: true));
     if (r.vaultSongExtraLanternCost > 0)
       lines.add(_RestLine('!', AppStrings.get('restVaultSongExtraLantern'),
-          '−${r.vaultSongExtraLanternCost}',
-          positive: false));
+          '−${r.vaultSongExtraLanternCost}', positive: false));
 
-    // Sự soi rọi của Tro tàn
+    // ── SỰ SOI RỌI CỦA TRO TÀN ───────────────────────────────────────────────
     if (r.ashFlareActive) {
       lines.add(_RestLine('★', AppStrings.get('restAshFlareLantern'), '±0',
           positive: true));
       lines.add(_RestLine('★', AppStrings.get('restAshFlareSanity'), '100%',
           positive: true));
-      lines.add(
-          _RestLine('★', AppStrings.get('restAshFlareStatus'), '', positive: true));
+      lines.add(_RestLine('★', AppStrings.get('restAshFlareStatus'), '',
+          positive: true));
     }
+
+    // ── DEBUFF KÍCH HOẠT ─────────────────────────────────────────────────────
+    if (r.racingHeartActive)
+      lines.add(_RestLine('!', AppStrings.get('statusRacingHeart'), '',
+          positive: false));
+    if (r.sleepyActive)
+      lines.add(_RestLine('!', AppStrings.get('statusSleepy'), '',
+          positive: false));
+    if (r.fearActive)
+      lines.add(_RestLine('!', AppStrings.get('statusFear'), '',
+          positive: false));
 
     return lines;
   }
@@ -256,7 +269,7 @@ class _RestResultOverlayState extends State<RestResultOverlay>
                   border: Border.all(color: const Color(0xFF2A2010), width: 1),
                 ),
                 child: Text(
-                  AppStrings.get(_eventDescKey(r.event)),
+                  AppStrings.get(_eventDescKey(r)),
                   style: const TextStyle(
                     fontFamily: 'GnuUnifont',
                     fontSize: 10,
@@ -383,19 +396,27 @@ class _RestResultOverlayState extends State<RestResultOverlay>
         NightEvent.suddenDeathDoor  => 'nightEventSuddenDeathDoorTitle',
       };
 
-  String _eventDescKey(NightEvent e) => switch (e) {
-        NightEvent.deepSleep        => 'nightEventDeepSleepDesc',
-        NightEvent.nightmare        => 'nightEventNightmareDesc',
-        NightEvent.blindWhisper     => 'nightEventBlindWhisperDesc',
-        NightEvent.emberThief       => 'nightEventEmberThiefDesc',
-        NightEvent.nightRaid        => 'nightEventNightRaidDesc',
-        NightEvent.sadMemory        => 'nightEventSadMemoryDesc',
-        NightEvent.outsidePlea      => 'nightEventOutsidePleaDesc',
-        NightEvent.toxicFog         => 'nightEventToxicFogDesc',
-        NightEvent.vaultSong        => 'nightEventVaultSongDesc',
-        NightEvent.ashFlare         => 'nightEventAshFlareDesc',
-        NightEvent.suddenDeathDoor  => 'nightEventSuddenDeathDoorDesc',
-      };
+  String _eventDescKey(RestResult r) {
+    if (r.event == NightEvent.outsidePlea) {
+      // 3 nhánh phụ: đóng cửa | mở cửa bị trộm | mở cửa bị tấn công
+      if (r.humanityChange < 0)   return 'nightEventOutsidePleaDesc';       // đóng cửa
+      if (r.navigateToCombat)     return 'nightEventOutsidePleaCombatDesc'; // bị tấn công
+      return 'nightEventOutsidePleaStolenDesc';                              // bị trộm / cố trộm
+    }
+    return switch (r.event) {
+      NightEvent.deepSleep        => 'nightEventDeepSleepDesc',
+      NightEvent.nightmare        => 'nightEventNightmareDesc',
+      NightEvent.blindWhisper     => 'nightEventBlindWhisperDesc',
+      NightEvent.emberThief       => 'nightEventEmberThiefDesc',
+      NightEvent.nightRaid        => 'nightEventNightRaidDesc',
+      NightEvent.sadMemory        => 'nightEventSadMemoryDesc',
+      NightEvent.outsidePlea      => 'nightEventOutsidePleaDesc', // fallback
+      NightEvent.toxicFog         => 'nightEventToxicFogDesc',
+      NightEvent.vaultSong        => 'nightEventVaultSongDesc',
+      NightEvent.ashFlare         => 'nightEventAshFlareDesc',
+      NightEvent.suddenDeathDoor  => 'nightEventSuddenDeathDoorDesc',
+    };
+  }
 
   Color _eventColor(NightEvent e) => switch (e) {
         NightEvent.deepSleep        => const Color(0xFF5588AA),
@@ -408,7 +429,7 @@ class _RestResultOverlayState extends State<RestResultOverlay>
         NightEvent.toxicFog         => const Color(0xFF668855),
         NightEvent.vaultSong        => const Color(0xFF9966AA),
         NightEvent.ashFlare         => const Color(0xFFDDB844),
-        NightEvent.suddenDeathDoor  => const Color(0xFF220000),
+        NightEvent.suddenDeathDoor  => const Color(0xFFCC2222),
       };
 
   static const String _restBase = 'assets/images/backgrounds/rest/';
@@ -424,6 +445,6 @@ class _RestResultOverlayState extends State<RestResultOverlay>
         NightEvent.toxicFog         => '${_restBase}toxic_fog_storm_choking.png',
         NightEvent.vaultSong        => '${_restBase}haunting_song_from_rafters.png',
         NightEvent.ashFlare         => '${_restBase}skull_lantern_sacred_radiance_grayscale.png',
-        NightEvent.suddenDeathDoor  => '${_restBase}sudden_death_door.png',
+        NightEvent.suddenDeathDoor  => '${_restBase}sleep_sudden_death.png',
       };
 }

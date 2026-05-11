@@ -89,6 +89,42 @@ class StatusEffectInfo {
       icon: '⚠',
       group: StatusGroup.combat,
     ),
+
+    StatusId.bleeding: StatusEffectInfo(
+      id: StatusId.bleeding,
+      nameKey: 'statusBleeding',
+      descKey: 'statusBleedingDesc',
+      color: Color(0xFF992211),
+      icon: '†',
+      group: StatusGroup.combat,
+    ),
+
+    StatusId.poisoned: StatusEffectInfo(
+      id: StatusId.poisoned,
+      nameKey: 'statusPoisoned',
+      descKey: 'statusPoisonedDesc',
+      color: Color(0xFF446633),
+      icon: '☠',
+      group: StatusGroup.combat,
+    ),
+
+    StatusId.dislocated: StatusEffectInfo(
+      id: StatusId.dislocated,
+      nameKey: 'statusDislocated',
+      descKey: 'statusDislocatedDesc',
+      color: Color(0xFF887744),
+      icon: '⛓',
+      group: StatusGroup.combat,
+    ),
+
+    StatusId.stunned: StatusEffectInfo(
+      id: StatusId.stunned,
+      nameKey: 'statusStunned',
+      descKey: 'statusStunnedDesc',
+      color: Color(0xFF6655AA),
+      icon: '★',
+      group: StatusGroup.combat,
+    ),
   };
 
   static StatusEffectInfo? of(StatusId id) => all[id];

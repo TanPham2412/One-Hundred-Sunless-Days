@@ -38,7 +38,20 @@ enum StatusId {
   sleepy,
 
   /// Sợ Hãi – khóa toàn bộ kỹ năng đặc biệt trong chiến đấu.
-  fear,}
+  fear,
+
+  /// Chảy Máu – mỗi hiệp chiến đấu bị trừ một lượng HP nhất định.
+  bleeding,
+
+  /// Nhiễm Độc – mỗi hiệp chiến đấu bị trừ HP (cơ chế giống Chảy Máu, hiệu ứng khác).
+  poisoned,
+
+  /// Trật Khớp – Action Value bị đẩy lùi 20%, hành động chậm hơn rõ rệt.
+  dislocated,
+
+  /// Choáng – mất lượt hành động tiếp theo (không thể tấn công hoặc phòng thủ).
+  stunned,
+}
 
 class StatusChange {
   final StatusId status;

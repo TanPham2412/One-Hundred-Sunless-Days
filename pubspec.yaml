@@ -58,7 +58,9 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/images/
     - assets/images/backgrounds/
+    - assets/images/backgrounds/death/
     - assets/images/backgrounds/rest/
     - assets/images/backgrounds/event/
     - assets/images/backgrounds/train/dry_weapon_swings/

@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:one_hundred_sunless_days/l10n/app_strings.dart';
 import 'package:one_hundred_sunless_days/models/character.dart';
+import 'package:one_hundred_sunless_days/models/enemy_data.dart';
+import 'package:one_hundred_sunless_days/models/monster.dart';
+import 'package:one_hundred_sunless_days/screens/combat_prep_screen.dart';
+import 'package:one_hundred_sunless_days/screens/start_screen.dart';
 import 'package:one_hundred_sunless_days/screens/temple_screen.dart';
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -58,16 +62,20 @@ class StoryScreen extends StatefulWidget {
   State<StoryScreen> createState() => _StoryScreenState();
 }
 
-// Hai pha hiển thị: thẻ tiêu đề → cảnh có hộp thoại
-enum _Phase { title, scene }
+/// Lựa chọn hướng đi của người chơi ở cuối cảnh 2.
+enum _Branch { none, attack, trust }
+
+// Pha hiển thị: tiêu đề → cảnh → lựa chọn → chiến đấu / chết
+enum _Phase { title, scene, choice, death }
 
 class _StoryScreenState extends State<StoryScreen>
     with TickerProviderStateMixin {
   _Phase _phase = _Phase.title;
+  _Branch _branch = _Branch.none;
 
   // ── Dữ liệu cốt truyện ────────────────────────────────────────────────────
   late final String _title = AppStrings.get('storyDay1Title');
-  late final List<_StoryAct> _acts = [
+  final List<_StoryAct> _acts = [
     _StoryAct(
       backgroundAsset: 'assets/images/backgrounds/intro_scene.png',
       segments: [
@@ -88,7 +96,6 @@ class _StoryScreenState extends State<StoryScreen>
           AppStrings.get('storyDay1WatcherName'),
           AppStrings.get('storyDay1WatcherLine2'),
         ),
-        _Segment.system(AppStrings.get('storyDay1SystemNotice')),
       ],
     ),
   ];
@@ -141,6 +148,7 @@ class _StoryScreenState extends State<StoryScreen>
 
   void _onTap() {
     if (_transitioning) return;
+    if (_phase == _Phase.choice || _phase == _Phase.death) return;
 
     if (_phase == _Phase.title) {
       _transitionToScene();
@@ -164,12 +172,22 @@ class _StoryScreenState extends State<StoryScreen>
       // Hết đoạn → chuyển sang cảnh tiếp theo
       _transitionToNextAct();
     } else {
-      // Hết tất cả → chuyển sang TempleScreen với nhân vật mới
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => TempleScreen(character: Character()),
-        ),
-      );
+      // Hết tất cả → xử lý theo nhánh
+      if (_branch == _Branch.none) {
+        _transitionToChoice();
+      } else if (_branch == _Branch.attack) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => CombatPrepScreen(
+              character: Character(),
+              monster: MonsterRegistry.watcherGuise,
+              enemyData: EnemyRegistry.watcherGuise,
+            ),
+          ),
+        );
+      } else {
+        _showDeathScreen();
+      }
     }
   }
 
@@ -258,6 +276,69 @@ class _StoryScreenState extends State<StoryScreen>
 
   // ── Build gốc ─────────────────────────────────────────────────────────────
 
+  /// Fade sang đen → hiện màn lựa chọn → fade trở lại.
+  Future<void> _transitionToChoice() async {
+    setState(() => _transitioning = true);
+    await _overlayCtrl.forward();
+    if (!mounted) return;
+    setState(() {
+      _phase = _Phase.choice;
+      _transitioning = false;
+    });
+    await _overlayCtrl.reverse();
+  }
+
+  /// Người chơi chọn nhánh → append acts + chuyển sang cảnh tiếp theo.
+  void _onChoiceMade(bool attackChoice) {
+    _acts.addAll(attackChoice ? _buildAttackActs() : _buildTrustActs());
+    setState(() {
+      _branch = attackChoice ? _Branch.attack : _Branch.trust;
+      _phase = _Phase.scene;
+    });
+    _transitionToNextAct();
+  }
+
+  /// Fade sang đen → hiện màn chết → fade trở lại.
+  Future<void> _showDeathScreen() async {
+    setState(() => _transitioning = true);
+    await _overlayCtrl.forward();
+    if (!mounted) return;
+    setState(() {
+      _phase = _Phase.death;
+      _transitioning = false;
+    });
+    await _overlayCtrl.reverse();
+  }
+
+  List<_StoryAct> _buildAttackActs() => [
+    _StoryAct(
+      backgroundAsset: 'assets/images/backgrounds/story_day1_attack.png',
+      segments: [
+        _Segment.narrative(AppStrings.get('storyDay1AttackSeg1')),
+        _Segment.narrative(AppStrings.get('storyDay1AttackSeg2')),
+        _Segment.dialogue(
+          AppStrings.get('storyDay1WatcherName'),
+          AppStrings.get('storyDay1AttackLine'),
+        ),
+        _Segment.system(AppStrings.get('storyDay1SystemNoticeCombat')),
+      ],
+    ),
+  ];
+
+  List<_StoryAct> _buildTrustActs() => [
+    _StoryAct(
+      backgroundAsset: 'assets/images/backgrounds/story_day1_trust.png',
+      segments: [
+        _Segment.narrative(AppStrings.get('storyDay1TrustSeg1')),
+        _Segment.narrative(AppStrings.get('storyDay1TrustSeg2')),
+        _Segment.dialogue(
+          AppStrings.get('storyDay1WatcherName'),
+          AppStrings.get('storyDay1TrustLine'),
+        ),
+      ],
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -270,8 +351,10 @@ class _StoryScreenState extends State<StoryScreen>
           children: [
             // ── Nội dung chính ──────────────────────────────────────────
             switch (_phase) {
-              _Phase.title => _buildTitleCard(),
-              _Phase.scene => _buildScene(),
+              _Phase.title  => _buildTitleCard(),
+              _Phase.scene  => _buildScene(),
+              _Phase.choice => _buildChoiceScreen(),
+              _Phase.death  => _buildDeathScreen(),
             },
 
             // ── Overlay đen chuyển cảnh ─────────────────────────────────
@@ -495,6 +578,210 @@ class _StoryScreenState extends State<StoryScreen>
             ),
           )
           .toList(),
+    );
+  }
+
+  // ── Màn lựa chọn ─────────────────────────────────────────────────────────
+
+  Widget _buildChoiceScreen() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            const ColoredBox(color: Colors.black),
+            Align(
+              alignment: Alignment.topCenter,
+              child: Image.asset(
+                _currentAct.backgroundAsset,
+                width: constraints.maxWidth,
+                fit: BoxFit.fitWidth,
+                filterQuality: FilterQuality.none,
+              ),
+            ),
+            const Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                height: 320,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x00000000), Color(0xF2000000)],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _buildChoicePanel(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildChoicePanel() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 44),
+      decoration: const BoxDecoration(
+        color: Color(0xED080808),
+        border: Border(
+          top: BorderSide(color: Color(0xFF4A3618), width: 2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildChoiceBtn(
+            label: AppStrings.get('storyDay1ChoiceAttack'),
+            accentColor: const Color(0xFF8B2020),
+            onTap: () => _onChoiceMade(true),
+          ),
+          const SizedBox(height: 12),
+          _buildChoiceBtn(
+            label: AppStrings.get('storyDay1ChoiceTrust'),
+            accentColor: const Color(0xFF4A3618),
+            onTap: () => _onChoiceMade(false),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChoiceBtn({
+    required String label,
+    required Color accentColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A0A0A),
+          border: Border.all(color: accentColor, width: 2),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'GnuUnifont',
+            fontSize: 15,
+            color: Color(0xFFCEC8B0),
+            height: 1.6,
+            letterSpacing: 0.3,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Màn chết ──────────────────────────────────────────────────────────────
+
+  Widget _buildDeathScreen() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            const ColoredBox(color: Colors.black),
+            Align(
+              alignment: Alignment.topCenter,
+              child: Image.asset(
+                'assets/images/backgrounds/death/death_screen_stab_through_heart.png',
+                width: constraints.maxWidth,
+                fit: BoxFit.fitWidth,
+                filterQuality: FilterQuality.none,
+              ),
+            ),
+            const Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                height: 320,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x00000000), Color(0xF2000000)],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _buildDeathBox(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDeathBox() {
+    final lines = AppStrings.get('storyDay1SystemNoticeDeath').split('\n');
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 44),
+      decoration: const BoxDecoration(
+        color: Color(0xE5100000),
+        border: Border(
+          top: BorderSide(color: Color(0xFF5A0000), width: 2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ...lines.map(
+            (line) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Text(
+                line,
+                style: const TextStyle(
+                  fontFamily: 'GnuUnifont',
+                  fontSize: 15,
+                  color: Color(0xFFCC4444),
+                  height: 1.7,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: () => Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const StartScreen()),
+              (_) => false,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0A0A0A),
+                border: Border.all(color: const Color(0xFF5A0000), width: 2),
+              ),
+              child: Text(
+                AppStrings.get('storyDay1DeathReturnBtn'),
+                style: const TextStyle(
+                  fontFamily: 'GnuUnifont',
+                  fontSize: 14,
+                  color: Color(0xFFCC4444),
+                  letterSpacing: 2,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

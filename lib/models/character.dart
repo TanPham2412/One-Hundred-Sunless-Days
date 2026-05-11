@@ -131,6 +131,13 @@ class RestResult {
   /// Ranh giới đột tử: debuff [Sợ Hãi] kích hoạt – kỹ năng đặc biệt bị khóa trong chiến đấu.
   final bool fearActive;
 
+  /// Mức Độ Sáng của lồng đèn tại thời điểm ngủ (sau khi trừ chi phí nghỉ).
+  /// Dùng để hiển thị đúng thể lực hồi phục trên UI.
+  final BrightnessLevel brightnessAtRest;
+
+  /// Thể lực trước khi nghỉ – dùng để tính delta hiển thị trên UI.
+  final int staminaBefore;
+
   const RestResult({
     required this.event,
     required this.newDay,
@@ -156,6 +163,8 @@ class RestResult {
     this.racingHeartActive = false,
     this.sleepyActive = false,
     this.fearActive = false,
+    required this.brightnessAtRest,
+    required this.staminaBefore,
   });
 }
 
@@ -767,6 +776,7 @@ class Character {
     // Tỷ lệ hồi cơ bản theo Độ Sáng: bright=100%, dim=75%, dark=50%.
     // Extinguished: không hồi theo tỷ lệ, chỉ +10 Thể Lực.
     final BrightnessLevel brightnessLevel = LanternSystem.levelOf(lanternDurability);
+    final int staminaBefore = stamina; // lưu trước khi hồi
     if (brightnessLevel == BrightnessLevel.extinguished) {
       stamina = (stamina + 10).clamp(0, maxStamina);
     } else {
@@ -780,7 +790,9 @@ class Character {
       if (event == NightEvent.nightRaid || event == NightEvent.toxicFog) {
         stamina = (maxStamina * 0.5).round();
       } else {
-        stamina = (maxStamina * baseStaminaPct).round();
+        // Hồi lên đến mức baseStaminaPct, nhưng không bao giờ trừ stamina hiện có.
+        final int target = (maxStamina * baseStaminaPct).round();
+        stamina = stamina > target ? stamina : target;
       }
     }
     const int bonusStaminaLoss = 0;
@@ -976,7 +988,7 @@ class Character {
       nightRaidHalfStamina:    event == NightEvent.nightRaid,
       lanternCost:             ashFlareResult
                                    ? 0
-                                   : LanternSystem.restCost + vaultSongExtraLantern,
+                                   : LanternSystem.restCost,
       blindWhisperBonus:       blindWhisperBonus,
       navigateToCombat:        navigateToCombat,
       humanityChange:          humanityChange,
@@ -990,6 +1002,8 @@ class Character {
       racingHeartActive:        racingHeartResult,
       sleepyActive:             sleepyResult,
       fearActive:               fearResult,
+      brightnessAtRest:         brightnessLevel,
+      staminaBefore:            staminaBefore,
     );
   }
 

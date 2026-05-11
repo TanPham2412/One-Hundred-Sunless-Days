@@ -36,26 +36,53 @@ class AppStrings {
         'Mùi khét của xương tủy cháy xộc thẳng vào mũi đánh thức bạn. Mí mắt nặng trĩu.',
     'storyDay1Seg2':
         'Xung quanh là những bức tường đá đổ nát của một thánh đường đã bị lãng quên. '
-            'Ánh sáng duy nhất đến từ một đống lửa nhỏ đang thoi thóp ở trung tâm.',
+        'Ánh sáng duy nhất đến từ một đống lửa nhỏ đang thoi thóp ở trung tâm.',
     'storyDay1Seg3':
         'Bên kia đống lửa, một bóng người gầy gò, khoác áo choàng rách rưới đang ngồi '
-            'bất động. Hốc mắt lão trống rỗng, sâu hoắm.',
+        'bất động. Hốc mắt lão trống rỗng, sâu hoắm. Trông lão yếu ớt đến mức một cơn gió cũng có thể thổi bay.',
+        
     // Cảnh 2 – Kẻ Mù trao đồ
     'storyDay1WatcherName': 'Kẻ Mù',
     'storyDay1WatcherLine1':
         '"Lại một kẻ nữa bị vực thẳm nhổ ra... Ngươi không nhớ mình là ai, phải không? '
-            'Đừng cố. Ở Kỷ Nguyên Tro Tàn này, tên tuổi là thứ vô dụng nhất."',
+        'Đừng cố. Ở Kỷ Nguyên Tro Tàn này, tên tuổi là thứ vô dụng nhất."',
     'storyDay1WatcherAction':
         'Lão ho khùng khục, ném về phía bạn một vật phẩm lạnh lẽo. '
-            'Đó là một chiếc lồng đèn làm từ xương sọ chưa hoàn thiện.',
+        'Đó là một chiếc lồng đèn làm từ xương sọ chưa hoàn thiện.',
     'storyDay1WatcherLine2':
-        '"Cầm lấy Lồng Đèn Xương. Lửa là sự sống, là ký ức, là sức mạnh. '
-            'Đi nhặt nhạnh bất cứ thứ gì có thể đốt được để duy trì ngọn lửa này. '
-            'Và nhớ lấy... bóng tối ngoài kia đang đói."',
-    'storyDay1SystemNotice':
-        '• Bạn đã nhận được [Lồng Đèn Xương].\n'
-            '• Mở khóa khu vực: Nhà Thờ Bỏ Hoang (Safehouse).\n'
-            '• Mở khóa chức năng: Tập Luyện & Khám Phá.',
+        '"Cầm lấy Lồng Đèn Xương. Lửa là sự sống... Lại gần đây, nhặt nó lên đi..."',
+
+    // Lựa chọn Ngày 1
+    'storyDay1ChoiceAttack': 'Rút vũ khí, lao vào tấn công lão già',
+    'storyDay1ChoiceTrust':  'Tiến lại gần, cúi xuống nhặt Lồng Đèn Xương',
+
+    // Nhánh tấn công – Ngày 1
+    'storyDay1AttackSeg1':
+        'Bản năng sinh tồn gào thét trong não bộ. Bạn nắm chặt vũ khí cùn mẻ, '
+        'lao thẳng tới bổ một nhát chí mạng vào cái cổ gầy gò của lão.',
+    'storyDay1AttackSeg2':
+        'Lão già không hề né tránh. Lưỡi dao kẹt cứng giữa không trung. '
+        'Lớp áo choàng rách rưới rách toạc ra, để lộ một khối cơ bắp cuồn cuộn dị hợm '
+        'và vô số những con mắt đỏ ngòm chớp nháy trong hốc xương.',
+    'storyDay1AttackLine':
+        '"Hahaha... Bản năng sinh tồn tốt lắm, con chuột nhỏ! Lửa không dành cho kẻ yếu!"',
+    'storyDay1SystemNoticeCombat':
+        '[ CHUẨN BỊ CHIẾN ĐẤU: VỎ BỌC CỦA KẺ MÙ ]',
+
+    // Nhánh tin tưởng – Ngày 1
+    'storyDay1TrustSeg1':
+        'Sự tàn tạ của lão khiến bạn buông lỏng cảnh giác. '
+        'Bạn bước tới, quỳ một chân xuống và vươn tay định nhặt chiếc Lồng Đèn Xương.',
+    'storyDay1TrustSeg2':
+        'Nhưng khi tay bạn vừa chạm vào lớp sọ lạnh lẽo, một thứ gì đó sắc lẹm đã xuyên thủng lồng ngực bạn. '
+        'Lão già vẫn ngồi bất động, nhưng cái bóng của lão trên tường đã biến thành một con quái vật '
+        'với móng vuốt dài ngoẵng cắm ngập vào tim bạn.',
+    'storyDay1TrustLine':
+        '"Kẻ yếu đuối... Lòng thương hại là một căn bệnh thối rữa..." Lão thì thầm.',
+    'storyDay1SystemNoticeDeath':
+        '[ BẠN ĐÃ CHẾT ]\n'
+        'Quy tắc sinh tồn số 1: Không có sinh vật nào yếu ớt có thể sống sót ở đây.',
+    'storyDay1DeathReturnBtn': '[ QUAY VỀ MÀN HÌNH BẮT ĐẦU ]',
 
     // Màn hình start
     'startBtnNew': 'BẮT ĐẦU MỚI',
@@ -190,6 +217,15 @@ class AppStrings {
     'restStaminaFull': 'ĐẦY ĐỦ',
     'restStaminaHalf': 'Nửa (Bị TẤN CÔNG)',
     'restStaminaHalfFog': 'Nửa (SƯƠNG ĐỘC)',
+    'restStaminaDim': '75%',
+    'restStaminaDark': '50%',
+    'restStaminaExtinguished': '+10',
+    'restHpToOne': '→ 1',
+    'restEmberThiefBrightness': 'Chuột Than Hút Sáng (Đèn)',
+    'restOutsidePleaStolen': 'Bị Trộm Mất',
+    'restDebuffRacingHeart': '[Tim Đập Mạnh] hôm nay',
+    'restDebuffSleepy': '[Ngái Ngủ] trong trận chiến',
+    'restDebuffFear': '[Sợ Hãi] trong trận chiến',
     'restStarvation': 'CHẾT ĐÓI',
     'restFoodStolen': 'Bị ĐÁNH CẮP',
     'restEmberThiefStole': 'Chuột Than cắp',
@@ -213,6 +249,8 @@ class AppStrings {
     'nightEventSadMemoryDesc': 'Trong màn đêm tĩnh lặng, bạn mơ thấy một đoạn ký ức đẹp đẽ của những ngày thế giới chưa lụi tàn. Bạn choàng tỉnh, khóe mắt cay cay. Nỗi buồn vô tận ập đến khi nhận ra thực tại tàn khốc, nhưng sâu thẳm bên trong, bạn thấy mình vẫn còn là một con người.',
     'nightEventOutsidePleaTitle': 'LỜI CẦU CỨU NGOÀI CỬA',
     'nightEventOutsidePleaDesc': 'Giữa đêm, bạn nghe thấy tiếng gõ cửa yếu ớt và giọng nói thều thào vang lên: "Làm ơn... cho tôi một chút lửa... tôi lạnh quá...". Bạn nằm im không dám đáp lời, chờ đợi cho đến khi âm thanh đó chìm hẳn vào hư vô.',
+    'nightEventOutsidePleaStolenDesc': 'Bạn hé cửa ra một chút, định xem ai đứng ngoài kia. Chưa kịp phản ứng, một bàn tay lạnh ngắt đã luồn vào bên trong — giật đi thứ gì đó rồi biến mất vào bóng tối. Bạn đứng đó nhìn theo, chưa hiểu chuyện gì vừa xảy ra.',
+    'nightEventOutsidePleaCombatDesc': 'Bạn hé cửa. Không có ai. Rồi một khối nặng nề lao thẳng vào người bạn — thứ đứng ngoài kia không hề cần lửa, nó cần thứ khác hơn. Trận chiến bắt đầu.',
     'nightEventToxicFogTitle': 'CƠN BÃO SƯƠNG ĐỘC',
     'nightEventToxicFogDesc': 'Đêm nay, gió rít từng hồi qua những khe hở của Nhà Thờ. Sương mù đặc quánh và độc hại luồn lách vào tận nơi bạn nằm. Không khí trở nên đặc nghẹt, bóp nghẹt buồng phổi khiến bạn ho sặc sụa suốt đêm.',
     'nightEventVaultSongTitle': 'KHÚC HÁT TỪ RƯỜNG CỘT',
@@ -222,7 +260,7 @@ class AppStrings {
     'nightEventInvisibleWatcherTitle': 'KẺ DÒM NGÓ VÔ HÌNH',
     'nightEventInvisibleWatcherDesc': 'Bạn có một giấc ngủ bình thường, nhưng khi tỉnh dậy, bạn phát hiện ra vô số những vết cào xước mới toanh quanh chỗ mình nằm, cùng với những dấu chân dính đầy bùn đen. Một thứ gì đó đã đứng nhìn bạn ngủ suốt cả đêm mà không hề tấn công.',
     'nightEventSuddenDeathDoorTitle': 'RANH GIỚI ĐỘT TỬ',
-    'nightEventSuddenDeathDoorDesc': 'Bóng tối đặc quánh ngấm qua da thịt. Bạn tỉnh giấc trong giật mình, tim đập loạn, miệng khô khấc. Chỉ có đúng một nhịp đập yếu ớt mà tất cả cơ thể bạn vấn đề vào. Niềm kinh hoàng của đêm nay sẽ không dễ dàng buông tha bạn trong ngày mai.',
+    'nightEventSuddenDeathDoorDesc': 'Bóng tối đặc quánh ngấm qua da thịt. Bạn tỉnh giấc trong giật mình, tim đập loạn, miệng khô khấc. Chỉ có đúng một nhịp đập yếu ớt mà tất cả cơ thể bạn bám víu vào. Niềm kinh hoàng của đêm nay sẽ không dễ dàng buông tha bạn trong ngày mai.',
 
     // Kết quả nghỉ ngơi – sự kiện mới
     'restSadMemoryHumanity': 'Nhân Tính',
@@ -238,10 +276,36 @@ class AppStrings {
 
     // Màn hình chiến đấu (placeholder)
     'combatTitle': 'CHIẾN ĐẤU',
-    'combatGroggyWarning': '[Ngái Ngủ] – Bạn bị đánh thức đột ngột!\nMất lượt đánh đầu tiên. Thể Lực chỉ hồi được 50%.',
+    'combatGroggyWarning': '[Ngái Ngủ] – Bạn bị đánh thức đột ngột!\nKẻ thù đánh lượt đầu tiên.',
     'combatComingSoon': '[ Hệ thống chiến đấu đang được xây dựng ]',
     'combatFlee': '[ RÚT LUI ]',
     'combatPrepFight': '[ CHIẾN ĐẤU ]',
+    'combatActionAttack':    'TẤN CÔNG',
+    'combatActionBlock':     'PHÒNG THỦ',
+    'combatStaminaLabel':    'THỂ LỰC CHIẾN',
+    'combatStatusPlayer':    'NHÂN VẬT',
+    'combatStatusBlocking':  'ĐANG ĐỠ',
+    'combatEnemySkills':     'KỸ NĂNG',
+    'combatDetailDismiss':   '[ thả để đóng ]',
+    'combatSkillIgnoresArmor': 'Xuyên Giáp',
+    'combatSkillLifesteal':    'Hút Máu',
+    'combatSkillBleed':        'Chảy Máu',
+    'combatSkillPoison':       'Nhiễm Độc',
+    'combatSkillFear':         'Sợ Hãi',
+    'combatSkillDislocated':   'Trật Khớp',
+    'combatSkillStun':         'Choáng',
+    'combatSkillStaminaDrain': 'Hút Thể Lực',
+
+    // Kỹ năng người chơi
+    'playerSkillDoubleSlashName': 'Chém Đôi',
+
+    // Màn hình chiến thắng
+    'combatVictoryTitle':   'BẠN ĐÃ TIÊU DIỆT KẺ THÙ',
+    'combatVicContinue':   'TIẾP TỤC',
+    'storyDay1SystemNoticeWin':
+        '• Bạn đã giành được [Lồng Đèn Xương].\n'
+        '• Mở khóa khu vực: Nhà Thờ Bỏ Hoang (Safehouse).\n'
+        '• Mở khóa chức năng: Tập Luyện & Khám Phá.',
 
     // Thông tin quái vật
     'monsterMimickingCorpseName':     'THI THỂ NHẠI TIẾNG',
@@ -252,6 +316,62 @@ class AppStrings {
         'Cổ họng nó bị rạch toạc, nơi một cụm ký sinh trùng bằng rễ cây tà ác đang cắm chặt '
         'vào dây thanh quản để nhại lại tiếng người. '
         'Ngay khi thấy ánh sáng lồng đèn, cụm rễ đó bung ra thành những xúc tu sắc nhọn và lao thẳng vào bạn.',
+
+    // Kỹ năng kẻ địch – Thi Thể Nhại Tiếng
+    'enemySkillLungingTearName':    'Vồ Vập Xé Xác',
+    'enemySkillParasiticRootName':  'Rễ Ký Sinh Hút Máu',
+
+    // Kỹ năng kẻ địch – Dã Khuyển Khâu Mắt
+    'enemySkillJugularBiteName':    'Cắn Xé Động Mạch',
+    'enemySkillDeathHowlName':      'Tiếng Hú Báo Tử',
+
+    // Kỹ năng kẻ địch – Giáo Sĩ Đọa Đày
+    'enemySkillSinfulJudgmentName': 'Phán Xét Tội Lỗi',
+    'enemySkillEvilChantName':      'Tụng Niệm Tà Ác',
+
+    // Kỹ năng kẻ địch – Khối Nhầy Nuốt Sáng
+    'enemySkillOxygenDeprivationName': 'Rút Cạn Dưỡng Khí',
+    'enemySkillAcidMistName':          'Phun Axit Sương Đục',
+
+    // Kỹ năng kẻ địch – Vỏ Bọc Của Kẻ Mù
+    'enemySkillShadowClawName': 'Trảo Bóng Đêm',
+
+    // Quái vật – Pool sự kiện ban đêm
+    'monsterStitchedEyeHoundName':     'Dã Khuyển Khâu Mắt',
+    'monsterStitchedEyeHoundSubtitle': 'The Stitched-Eye Hound',
+    'monsterStitchedEyeHoundDesc':
+        'Khi cánh cửa nhà thờ rầm rầm đổ sập, một tiếng gầm gừ trầm đục vang lên trong bóng tối. '
+        'Một con sói đột biến khổng lồ với lớp da bị lột nham nhở lao vào. '
+        'Hai hốc mắt của nó bị khâu kín bằng những sợi dây thép gỉ, '
+        'nhưng cái mõm đầy dãi của nó đã khóa chặt lấy mùi vị sinh mệnh yếu ớt của bạn.',
+
+    'monsterCorruptedClericName':     'Giáo Sĩ Đọa Đày',
+    'monsterCorruptedClericSubtitle': 'The Corrupted Cleric',
+    'monsterCorruptedClericDesc':
+        'Bóng tối đặc quánh bị rẽ làm đôi bởi một thân ảnh cao lớn, lù lù bước vào. '
+        'Tiếng xích sắt kéo lê trên nền gạch vỡ nghe rợn tóc gáy. '
+        'Hắn mặc bộ lễ phục mục nát của chính ngôi nhà thờ này, đầu bị giam trong một chiếc lồng sắt vặn vẹo. '
+        'Hắn nâng cây thánh giá khổng lồ đẫm máu lên, chuẩn bị thanh tẩy bạn khỏi cõi đời.',
+
+    'monsterLightDevouringSludgeName':     'Khối Nhầy Nuốt Sáng',
+    'monsterLightDevouringSludgeSubtitle': 'The Light-Devouring Sludge',
+    'monsterLightDevouringSludgeDesc':
+        'Cửa không bị phá vỡ, mà bị ăn mòn rỉ rả rồi đổ ụp xuống. '
+        'Một khối vật chất đen đặc, sền sệt như hắc ín lầm lì trườ vào trong. '
+        'Nó không có mắt mũi, chỉ có những cái lỗ khổng lồ liên tục đóng mở, '
+        'thở ra thứ sương mù độc hại. Nó đến để nuốt chửng thứ hơi ấm cuối cùng còn sót lại ở nơi này: là bạn.',
+
+    'monsterWatcherGuiseName':     'VỎ BỌC CỦA KẺ MÙ',
+    'monsterWatcherGuiseSubtitle': 'The Watcher\'s Guise',
+    'monsterWatcherGuiseDesc':
+        'Không có cửa bị phá vỡ. Bóng tối trên sàn nhà từ từ đặc lại, '
+        'vươn lên thành hình dạng một lão già. '
+        'Mặt lão bị băng trắng xóa — không mắt, không miệng — chỉ là vải và vỏ. '
+        'Nhưng cái bóng dưới chân lão thì vẫn còn móng.',
+
+    // Trạng thái – Choáng
+    'statusStunned':     'Choáng',
+    'statusStunnedDesc': 'Bỏ lỡ lượt hành động tiếp theo. Không thể tấn công hoặc phòng thủ.',
 
     // Bảng cài đặt
     'settingsTitle': 'CÀI ĐẶT',
@@ -344,7 +464,7 @@ class AppStrings {
     // Tier 1 – Thường
     'item_rough_iron_scrap_name': 'Mảnh Sắt Thô',
     'item_rough_iron_scrap_desc':
-        'Một vóc kim loại méo mó, xỉn màu. Bề mặt sần sùi chằng chịt những vết xước cạn và các cạnh viền thì mẻ răng cưa lởm chởm.',
+        'Một mảnh kim loại méo mó, xỉn màu. Bề mặt sần sùi chằng chịt những vết xước cạn và các cạnh viền thì mẻ răng cưa lởm chởm.',
     'item_rusty_nail_name': 'Đinh Sắt Gỉ',
     'item_rusty_nail_desc':
         'Một thanh kim loại thô kệch với phần đầu bị tán bẹt, xiêu vẹo. Xuyên suốt thân đinh là bề mặt rỗ nát, sần lên những mảng rỉ sét sẫm màu.',
@@ -494,7 +614,7 @@ class AppStrings {
         'Một mảng vải tơi tả, mỏng manh nhưng tăm tối hơn cả chính bóng đêm. Nó như một thực thể sống đang rũ xuống, không ngừng rỉ ra một thứ sương mù u ám, mang theo cái lạnh thấu xương và hơi thở hoang vu của sự kết thúc chôn vùi.',
     'item_players_own_blood_name': 'Máu Của Chính Người Chơi',
     'item_players_own_blood_desc':
-        'Một giật chất lỏng lơ lừng, đỏ thẫm và rực rỡ đến đau đớn. Nó cuộn xoáy mãnh liệt, sôi sục hơi nóng của sinh mệnh, tỏa ra cảm giác nhói buốt, nặng nề và thiêng liêng tột độ — như chính một mảnh linh hồn vừa bị tàn nhẫn xé toạc ra khỏi lồng ngực.',
+        'Một giọt chất lỏng lơ lửng, đỏ thẫm và rực rỡ đến đau đớn. Nó cuộn xoáy mãnh liệt, sôi sục hơi nóng của sinh mệnh, tỏa ra cảm giác nhói buốt, nặng nề và thiêng liêng tột độ — như chính một mảnh linh hồn vừa bị tàn nhẫn xé toạc ra khỏi lồng ngực.',
 
     'itemRarityUnique': 'ĐỘC NHẤT',
     'itemRarityCommon': 'THƯỜNG',
@@ -728,6 +848,50 @@ class AppStrings {
         '"Take the Bone Lantern. Fire is life, memory, and strength. '
             'Scavenge anything that can burn to keep this flame alive. '
             'And remember... the dark outside is hungry."',
+
+    // Day 1 choices
+    'storyDay1ChoiceAttack': 'Draw your weapon and lunge at the old man',
+    'storyDay1ChoiceTrust':  'Step closer and pick up the Bone Lantern',
+
+    // Attack branch – Day 1
+    'storyDay1AttackSeg1':
+        'Survival instinct screams inside your skull. You grip your dull weapon tight '
+        'and lunge straight at the old man\'s scrawny neck.',
+    'storyDay1AttackSeg2':
+        'The old man does not flinch. Your blade stops dead in midair. '
+        'His tattered cloak tears open, revealing grotesquely coiled muscle '
+        'and dozens of blood-red eyes blinking from hollow sockets.',
+    'storyDay1AttackLine':
+        '"Hahaha... Good survival instinct, little rat! Fire is not for the weak!"',
+    'storyDay1SystemNoticeCombat':
+        '[ PREPARE FOR COMBAT: THE WATCHER\'S GUISE ]',
+
+    // Player skill
+    'playerSkillDoubleSlashName': 'Double Slash',
+
+    // Victory screen
+    'combatVictoryTitle':   'ENEMY DEFEATED',
+    'combatVicContinue':   'CONTINUE',
+    'storyDay1SystemNoticeWin':
+        '• You received [Bone Lantern].\n'
+        '• Location unlocked: Abandoned Cathedral (Safehouse).\n'
+        '• Functions unlocked: Training & Exploration.',
+
+    // Trust branch – Day 1
+    'storyDay1TrustSeg1':
+        'His frailty lulls your guard. You step forward, kneel on one leg, '
+        'and reach out to pick up the Bone Lantern.',
+    'storyDay1TrustSeg2':
+        'But the instant your hand touches the cold skull, something razor-sharp '
+        'punches clean through your chest. The old man sits motionless still, '
+        'but his shadow on the wall has become a beast with long claws buried in your heart.',
+    'storyDay1TrustLine':
+        '"Weakness... Pity is a rotting disease..." the old man whispers.',
+    'storyDay1SystemNoticeDeath':
+        '[ YOU DIED ]\n'
+        'Survival rule #1: No creature too weak can survive here.',
+    'storyDay1DeathReturnBtn': '[ RETURN TO MAIN MENU ]',
+
     'storyDay1SystemNotice':
         '• You received [Bone Lantern].\n'
             '• Location unlocked: Abandoned Cathedral (Safehouse).\n'
@@ -866,6 +1030,15 @@ class AppStrings {
     'restStaminaFull': 'FULLY RESTORED',
     'restStaminaHalf': 'HALF (NIGHT RAID)',
     'restStaminaHalfFog': 'HALF (TOXIC FOG)',
+    'restStaminaDim': '75%',
+    'restStaminaDark': '50%',
+    'restStaminaExtinguished': '+10',
+    'restHpToOne': '→ 1',
+    'restEmberThiefBrightness': 'Ash Rat Drained Light (Lantern)',
+    'restOutsidePleaStolen': 'Item Stolen',
+    'restDebuffRacingHeart': '[Racing Heart] active today',
+    'restDebuffSleepy': '[Drowsy] in battle',
+    'restDebuffFear': '[Fear] in battle',
     'restStarvation': 'STARVATION',
     'restFoodStolen': 'STOLEN',
     'restEmberThiefStole': 'Ash Rat stole',
@@ -889,6 +1062,8 @@ class AppStrings {
     'nightEventSadMemoryDesc': 'In the still darkness, you dream of a beautiful memory from before the world ended. You wake with tears at the corner of your eyes. Endless sorrow floods in — but deep within, you feel you are still human.',
     'nightEventOutsidePleaTitle': 'A PLEA FROM OUTSIDE',
     'nightEventOutsidePleaDesc': 'In the dead of night, a faint knock at the door. A thin voice whispers: "Please... just a little fire... I\'m so cold...". You lie still, not daring to answer, until the sound fades into nothing.',
+    'nightEventOutsidePleaStolenDesc': 'You cracked the door open, just a sliver, to see who was there. Before you could react, a cold hand slipped inside — snatching something away before vanishing into the dark. You stood there, staring into the void, unsure of what had just happened.',
+    'nightEventOutsidePleaCombatDesc': 'You opened the door. No one there. Then something heavy slammed into you — whatever stood outside did not need fire. It needed something else entirely. The fight begins.',
     'nightEventToxicFogTitle': 'TOXIC FOG STORM',
     'nightEventToxicFogDesc': 'Wind howls through every crack in the Cathedral. Dense, poisonous fog seeps into where you sleep. The air grows thick and suffocating, making you cough violently through the entire night.',
     'nightEventVaultSongTitle': 'SONG FROM THE RAFTERS',
@@ -912,10 +1087,25 @@ class AppStrings {
 
     // Combat screen (placeholder)
     'combatTitle': 'COMBAT',
-    'combatGroggyWarning': '[Groggy] — You were woken violently!\nYou lose the first turn. Stamina recovered only 50%.',
+    'combatGroggyWarning': '[Groggy] — You were woken violently!\nThe enemy attacks first.',
     'combatComingSoon': '[ Combat system is under construction ]',
     'combatFlee': '[ FLEE ]',
     'combatPrepFight': '[ FIGHT ]',
+    'combatActionAttack':    'ATTACK',
+    'combatActionBlock':     'BLOCK',
+    'combatStaminaLabel':    'COMBAT STA',
+    'combatStatusPlayer':    'PLAYER',
+    'combatStatusBlocking':  'BLOCKING',
+    'combatEnemySkills':     'SKILLS',
+    'combatDetailDismiss':   '[ release to close ]',
+    'combatSkillIgnoresArmor': 'Pierces Armor',
+    'combatSkillLifesteal':    'Lifesteal',
+    'combatSkillBleed':        'Bleed',
+    'combatSkillPoison':       'Poison',
+    'combatSkillFear':         'Fear',
+    'combatSkillDislocated':   'Dislocated',
+    'combatSkillStun':         'Stun',
+    'combatSkillStaminaDrain': 'Stamina Drain',
 
     // Monster data
     'monsterMimickingCorpseName':     'THE MIMICKING CORPSE',
@@ -927,6 +1117,61 @@ class AppStrings {
         'from some wicked growth had burrowed into the vocal cords to mimic human speech. '
         'The moment it sensed the lantern\u2019s light, the root cluster erupted into '
         'razor-sharp tentacles and lunged straight for you.',
+
+    // Enemy skills – The Mimicking Corpse
+    'enemySkillLungingTearName':    'Lunging Slash',
+    'enemySkillParasiticRootName':  'Parasitic Blood Root',
+
+    // Enemy skills – The Stitched-Eye Hound
+    'enemySkillJugularBiteName':    'Jugular Bite',
+    'enemySkillDeathHowlName':      'Death Howl',
+
+    // Enemy skills – The Corrupted Cleric
+    'enemySkillSinfulJudgmentName': 'Sinful Judgment',
+    'enemySkillEvilChantName':      'Evil Chant',
+
+    // Enemy skills – The Light-Devouring Sludge
+    'enemySkillOxygenDeprivationName': 'Oxygen Deprivation',
+    'enemySkillAcidMistName':          'Acid Mist Spit',
+
+    // Enemy skills – The Watcher's Guise
+    'enemySkillShadowClawName': 'Shadow Claw',
+
+    // Monsters – Night event pool
+    'monsterStitchedEyeHoundName':     'THE STITCHED-EYE HOUND',
+    'monsterStitchedEyeHoundSubtitle': 'Dã Khuyển Khâu Mắt',
+    'monsterStitchedEyeHoundDesc':
+        'When the church door slammed and collapsed, a deep growl rumbled from the darkness. '
+        'A massive mutant wolf with ragged, flayed skin lunged inside. '
+        'Its two eye sockets were sewn shut with rusty wire, '
+        'yet its slobbering maw had locked onto the scent of your faint, living warmth.',
+
+    'monsterCorruptedClericName':     'THE CORRUPTED CLERIC',
+    'monsterCorruptedClericSubtitle': 'Giáo Sĩ Đọa Đày',
+    'monsterCorruptedClericDesc':
+        'The thick darkness parted before a towering silhouette that lumbered inside. '
+        'Iron chains dragged across broken flagstones with a bone-chilling scrape. '
+        'He wore the rotted vestments of this very church, his head caged in a twisted iron lattice. '
+        'He raised a massive, blood-drenched cross, ready to cleanse you from this world.',
+
+    'monsterLightDevouringSludgeName':     'THE LIGHT-DEVOURING SLUDGE',
+    'monsterLightDevouringSludgeSubtitle': 'Khối Nhầy Nuốt Sáng',
+    'monsterLightDevouringSludgeDesc':
+        'The door was not broken — it was dissolved, slowly eaten away until it simply collapsed. '
+        'A mass of dense, tar-like matter oozed silently inside. '
+        'It has no eyes or mouth, only vast orifices that open and close, '
+        'exhaling clouds of toxic haze. It has come to swallow the last warmth left in this place: you.',
+
+    'monsterWatcherGuiseName':     'THE WATCHER\'S GUISE',
+    'monsterWatcherGuiseSubtitle': 'Vỏ Bọc Của Kẻ Mù',
+    'monsterWatcherGuiseDesc':
+        'No door was broken. The darkness on the floor simply thickened and rose into his shape. '
+        'His face is bandaged blank — no eyes, no mouth — just cloth and shell. '
+        'But his shadow still has claws.',
+
+    // Status – Stunned
+    'statusStunned':     'Stunned',
+    'statusStunnedDesc': 'Skip the next action turn. Cannot attack or defend.',
 
     // Settings panel
     'settingsTitle': 'SETTINGS',

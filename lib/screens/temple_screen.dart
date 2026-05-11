@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:math';
+
+import 'package:flutter/material.dart';
 import 'package:one_hundred_sunless_days/l10n/app_strings.dart';
 import 'package:one_hundred_sunless_days/models/character.dart';
+import 'package:one_hundred_sunless_days/models/enemy_data.dart';
 import 'package:one_hundred_sunless_days/models/lantern.dart';
 import 'package:one_hundred_sunless_days/models/monster.dart';
 import 'package:one_hundred_sunless_days/screens/combat_prep_screen.dart';
@@ -62,22 +65,30 @@ class _TempleScreenState extends State<TempleScreen> {
     setState(() => _restResult = null);
     if (result == null || !result.navigateToCombat) return;
 
-    // outsidePlea (mở cửa → bị tấn công) → màn hình chuẩn bị chiến đấu
+    // outsidePlea (mở cửa → bị tấn công) → luôn gặp Thi Thể Nhại Tiếng
     if (result.event == NightEvent.outsidePlea) {
       Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => CombatPrepScreen(
-          character: widget.character,
-          monster: MonsterRegistry.mimickingCorpse,
+          character:   widget.character,
+          monster:     MonsterRegistry.mimickingCorpse,
+          enemyData:   EnemyRegistry.mimickingCorpse,
           startGroggy: false,
         ),
       ));
       return;
     }
 
-    // nightRaid (đột kích ban đêm) → vào combat trực tiếp với trạng thái [Ngái Ngủ]
+    // nightRaid (đột kích ban đêm) → ngẫu nhiên 1 trong 3 kẻ thù
+    final pool = [
+      (monster: MonsterRegistry.stitchedEyeHound,     data: EnemyRegistry.stitchedEyeHound),
+      (monster: MonsterRegistry.corruptedCleric,      data: EnemyRegistry.corruptedCleric),
+      (monster: MonsterRegistry.lightDevouringSludge, data: EnemyRegistry.lightDevouringSludge),
+    ];
+    final pick = pool[Random().nextInt(pool.length)];
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => CombatScreen(
-        character: widget.character,
+        character:   widget.character,
+        enemies:     [(monster: pick.monster, data: pick.data)],
         startGroggy: true,
       ),
     ));

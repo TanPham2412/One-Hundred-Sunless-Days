@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:one_hundred_sunless_days/l10n/app_strings.dart';
 import 'package:one_hundred_sunless_days/models/character.dart';
+import 'package:one_hundred_sunless_days/models/enemy_data.dart';
 import 'package:one_hundred_sunless_days/models/monster.dart';
 import 'package:one_hundred_sunless_days/screens/combat_screen.dart';
 
@@ -14,6 +15,9 @@ class CombatPrepScreen extends StatefulWidget {
   final Character character;
   final Monster monster;
 
+  /// Dữ liệu chiến đấu của kẻ địch tương ứng với [monster].
+  final EnemyData enemyData;
+
   /// true nếu người chơi đang bị trạng thái [Ngái Ngủ] khi vào trận.
   final bool startGroggy;
 
@@ -21,6 +25,7 @@ class CombatPrepScreen extends StatefulWidget {
     super.key,
     required this.character,
     required this.monster,
+    required this.enemyData,
     this.startGroggy = false,
   });
 
@@ -56,6 +61,9 @@ class _CombatPrepScreenState extends State<CombatPrepScreen>
         transitionDuration: const Duration(milliseconds: 400),
         pageBuilder: (_, __, ___) => CombatScreen(
           character: widget.character,
+          enemies: [
+            (monster: widget.monster, data: widget.enemyData),
+          ],
           startGroggy: widget.startGroggy,
         ),
         transitionsBuilder: (_, anim, __, child) =>

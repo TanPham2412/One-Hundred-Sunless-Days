@@ -9,22 +9,27 @@ abstract final class CombatFormulas {
 
   /// Tính sát thương thực tế sau khi áp dụng giáp.
   ///
-  /// Công thức: `actualDamage = rawDamage × (50 / (50 + armorValue))`
+  /// Công thức: `actualDamage = ATK² / (ATK + DEF)`  (làm tròn xuống)
   ///
-  /// - Tối thiểu **1** nếu `rawDamage > 0` (giáp không thể hoàn toàn vô hiệu hóa đòn đánh).
+  /// - Tối thiểu **1** nếu `rawDamage > 0`.
   /// - Trả về **0** nếu `rawDamage ≤ 0`.
+  /// - Khi DEF = 0   → damage = ATK (toàn bộ).
+  /// - Khi DEF = ATK → damage ≈ ATK / 2 (~50% reduction).
+  /// - ATK cao tự nhiên "xuyên giáp" tốt hơn — hợp lý về mặt chiến lược.
   ///
   /// Ví dụ:
   /// ```
-  /// applyArmor(10, 0)   → 10   (không có giáp)
-  /// applyArmor(10, 50)  → 5    (giảm 50%)
-  /// applyArmor(10, 200) → 2    (giảm 80%)
+  /// applyArmor(5,  0)  → 5
+  /// applyArmor(5,  2)  → 3   (giảm 40%)
+  /// applyArmor(5,  5)  → 2   (giảm 50%)
+  /// applyArmor(5, 10)  → 1   (giảm 80%, min 1)
+  /// applyArmor(10, 2)  → 8   (ATK cao xuyên giáp tốt hơn)
   /// ```
   static int applyArmor(int rawDamage, int armorValue) {
     if (rawDamage <= 0) return 0;
     if (armorValue <= 0) return rawDamage;
-    final double reduced = rawDamage * 50 / (50 + armorValue);
-    return reduced.round().clamp(1, rawDamage);
+    final double reduced = rawDamage * rawDamage / (rawDamage + armorValue);
+    return reduced.floor().clamp(1, rawDamage);
   }
 
   // ── Nhanh Nhẹn / Né Tránh & Tốc Độ Ra Đòn ──────────────────────────────
@@ -56,7 +61,7 @@ abstract final class CombatFormulas {
   /// Giữ nguyên tính thuần túy (pure) – không gọi `Random` trực tiếp ở đây.
   static bool isEvaded(int agi, double roll) => roll < evasionRate(agi);
 
-  // ── Tốc Độ Ra Đòn (Action Value – kiểu Honkai: Star Rail) ────────────────
+  // ── Tốc Độ Ra Đòn ────────────────
   //
   // Cơ chế:
   //   1. Khởi chiến: mỗi entity nhận currentAV = actionValue(agi).
